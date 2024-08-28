@@ -1,0 +1,21 @@
+{
+  "chartUrl": "https://arm.seli.gic.ericsson.se/artifactory/proj-am-helm/acceptance-test/v2/spider-app-flexible-verification-2.191.3.tgz",
+  "applicationTimeOut": "15",
+  "lifecycleOperationId": "my-id",
+  "state": "starting",
+  "namespace": "wfs-acceptance-v2-UNIQUE_NAME",
+  "helmClientVersion": "3.10",
+  "overrideGlobalRegistry": true,
+  "additionalParams": {
+    "tags.all": false,
+    "tags.pm": true,
+    "eric-adp-gs-testapp.ingress.enabled": false,
+    "eric-pm-server.server.ingress.enabled": false,
+    "influxdb.ingress.enabled": false,
+    "influxdb.ext.apiAccessHostname": "rontgen010.seli.gic.ericsson.se",
+    "pm-testapp.ingress.enabled": false,
+    "pm-testapp.ingress.domain": "rontgen010.seli.gic.ericsson.se",
+    "influxdb.service.type": "ClusterIP",
+    "eric-pm-bulk-reporter.service.type": "ClusterIP"
+  }
+}

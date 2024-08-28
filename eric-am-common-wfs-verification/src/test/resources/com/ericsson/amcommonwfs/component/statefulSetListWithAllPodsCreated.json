@@ -1,0 +1,159 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "metadata": {
+                "annotations": {
+                    "ericsson.com/product-name": "Key Management Service Helm Chart",
+                    "ericsson.com/product-number": "CXC1742793",
+                    "ericsson.com/product-revision": "5.2.0",
+                    "meta.helm.sh/release-name": "eric-cloud-native-base",
+                    "meta.helm.sh/release-namespace": "zkulrus-ns"
+                },
+                "creationTimestamp": "2023-05-18T06:02:52Z",
+                "generation": 1,
+                "labels": null,
+                "name": "eric-sec-key-management-main",
+                "namespace": "zkulrus-ns",
+                "resourceVersion": "78668537",
+                "uid": "da9910a9-bfbb-47c1-a513-7947719c6b46"
+            },
+            "spec": {
+                "podManagementPolicy": "OrderedReady",
+                "replicas": 1,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app": "eric-sec-key-management"
+                    }
+                },
+                "serviceName": "eric-sec-key-management-peer",
+                "template": null,
+                "updateStrategy": {
+                    "type": "RollingUpdate"
+                }
+            },
+            "status": {
+                "availableReplicas": 1,
+                "collisionCount": 0,
+                "currentReplicas": 1,
+                "currentRevision": "eric-sec-key-management-main-5d7fbc674",
+                "observedGeneration": 1,
+                "readyReplicas": 1,
+                "replicas": 1,
+                "updateRevision": "eric-sec-key-management-main-5d7fbc674",
+                "updatedReplicas": 1
+            }
+        },
+        {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "metadata": {
+                "annotations": {
+                    "ericsson.com/product-name": "PM Alert Manager HELM",
+                    "ericsson.com/product-number": "CXC 111 1111",
+                    "ericsson.com/product-revision": "1.1.0-99",
+                    "meta.helm.sh/release-name": "eric-eo-evnfm",
+                    "meta.helm.sh/release-namespace": "zkulrus-ns"
+                },
+                "creationTimestamp": "2023-05-18T06:08:18Z",
+                "generation": 1,
+                "labels": null,
+                "name": "evnfm-alert-manager",
+                "namespace": "zkulrus-ns",
+                "resourceVersion": "78686077",
+                "uid": "6edd6550-b10f-4a41-890b-a3fbb1441a5a"
+            },
+            "spec": {
+                "podManagementPolicy": "OrderedReady",
+                "replicas": 1,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app.kubernetes.io/instance": "eric-eo-evnfm",
+                        "app.kubernetes.io/name": "evnfm-alert-manager"
+                    }
+                },
+                "serviceName": "evnfm-alert-manager-headless",
+                "template": null,
+                "updateStrategy": {
+                    "rollingUpdate": {
+                        "partition": 0
+                    },
+                    "type": "RollingUpdate"
+                },
+                "volumeClaimTemplates": null
+            },
+            "status": {
+                "availableReplicas": 1,
+                "collisionCount": 0,
+                "currentReplicas": 1,
+                "currentRevision": "evnfm-alert-manager-84454d8c68",
+                "observedGeneration": 1,
+                "readyReplicas": 1,
+                "replicas": 1,
+                "updateRevision": "evnfm-alert-manager-84454d8c68",
+                "updatedReplicas": 1
+            }
+        },
+        {
+            "apiVersion": "apps/v1",
+            "kind": "StatefulSet",
+            "metadata": {
+                "annotations": {
+                    "currentPGVersion": "13",
+                    "ericsson.com/product-name": "Document Database PG",
+                    "ericsson.com/product-number": "CXC 201 1475",
+                    "ericsson.com/product-revision": "8.9.0+7",
+                    "meta.helm.sh/release-name": "eric-cloud-native-base",
+                    "meta.helm.sh/release-namespace": "zkulrus-ns"
+                },
+                "creationTimestamp": "2023-05-18T06:02:52Z",
+                "generation": 1,
+                "labels": null,
+                "name": "idam-database-pg",
+                "namespace": "zkulrus-ns",
+                "resourceVersion": "78662086",
+                "uid": "5ff96d21-5da2-4238-b9eb-13a36e6b2280"
+            },
+            "spec": {
+                "podManagementPolicy": "OrderedReady",
+                "replicas": 2,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app": "idam-database-pg",
+                        "cluster-name": "idam-database-pg"
+                    }
+                },
+                "serviceName": "idam-database-pg",
+                "template": null,
+                "updateStrategy": {
+                    "rollingUpdate": {
+                        "partition": 0
+                    },
+                    "type": "RollingUpdate"
+                },
+                "volumeClaimTemplates": null
+            },
+            "status": {
+                "availableReplicas": 2,
+                "collisionCount": 0,
+                "currentReplicas": 2,
+                "currentRevision": "idam-database-pg-6d8c586b6b",
+                "observedGeneration": 1,
+                "readyReplicas": 2,
+                "replicas": 2,
+                "updateRevision": "idam-database-pg-6d8c586b6b",
+                "updatedReplicas": 2
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": "",
+        "selfLink": ""
+    }
+}

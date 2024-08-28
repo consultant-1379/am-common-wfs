@@ -1,0 +1,567 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_018k7bh" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="12.0.0">
+  <bpmn:process id="InstantiateApplication__top" name="Instantiate Application" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:startEvent id="StartEvent_1" name="START">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="chartUrl" label="Chart URL" type="string" defaultValue="" />
+          <camunda:formField id="chartName" label="Chart name" type="string" defaultValue="stable/elasticsearch-exporter" />
+          <camunda:formField id="chartVersion" label="Chart version" type="string" defaultValue="" />
+          <camunda:formField id="namespace" label="namespace" type="string" defaultValue="default" />
+          <camunda:formField id="releaseName" label="releaseName" type="string" defaultValue="wfs-exporter" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>SequenceFlow_Start_InstantiateValidate</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_Start_InstantiateValidate" sourceRef="StartEvent_1" targetRef="Task_Instantiate_Validate" />
+    <bpmn:serviceTask id="Task_Instantiate_Validate" name="Validate Input" camunda:delegateExpression="${instantiationValidationTask}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="namespace">
+            <camunda:script scriptFormat="groovy">execution.getVariable("namespace")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartUrl">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartUrl")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="additionalParams">
+            <camunda:script scriptFormat="groovy">execution.getVariable("additionalParams")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_Start_InstantiateValidate</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1aaiyk9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="Activity_Instantiate_Application" name="Install Application" calledElement="subwf_helm_command"
+    camunda:asyncBefore="true" camunda:asyncAfter="true">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartUrl">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartUrl")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="namespace">
+            <camunda:script scriptFormat="groovy">execution.getVariable("namespace")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="helmRepoRoot">
+            <camunda:script scriptFormat="groovy">execution.getVariable("helmRepoRoot")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="additionalParams">
+            <camunda:script scriptFormat="groovy">execution.getVariable("additionalParams")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="type">
+            <camunda:script scriptFormat="groovy">execution.setVariable("commandType", "install")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:outputParameter name="commandOutput">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandOutput")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="appDeployed">
+            <camunda:script scriptFormat="groovy">execution.getVariable("appDeployed")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1evnczv</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_033geoa</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="EndEvent_InstantiateSuccessful" name="END">
+      <bpmn:incoming>SequenceFlow_1yagp7t</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="BoundaryEvent_InstantiateValidateFailed" attachedToRef="Task_Instantiate_Validate">
+      <bpmn:outgoing>Flow_1m3b8zq</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="EndEvent_Instantiate_Error" name="ERROR END">
+      <bpmn:incoming>SequenceFlow_1j7g19p</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0hk9te5</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_06vd60v" />
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="BoundaryEvent_InstantiateApplicationFailed" attachedToRef="Activity_Instantiate_Application">
+      <bpmn:outgoing>SequenceFlow_1w65hgq</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:scriptTask id="Task_LogInstantiateFailed" name="Log Instantiate Failed" scriptFormat="groovy">
+      <bpmn:incoming>Flow_1etn21k</bpmn:incoming>
+      <bpmn:incoming>Flow_0v53a2f</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1c3ikt0</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+        def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.InstantiateFailed");
+        String errorOutput = (String) execution.getVariable("errorMessage");
+        if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+        execution.setVariable("message",errorOutput);
+        } else {
+        execution.setVariable("message","Un-Known exception occured");
+        }
+        logger.error("Failed to create node due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:scriptTask id="Task_SetWorkflowStatus" name="Set Workflow Status" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0ysnray</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1jka8a7</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+        def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.InstantiateSuccess");
+        String verifyOutput = (String) execution.getVariable("verifyAppResult");
+        execution.setVariable("message",verifyOutput);
+        logger.info(execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1w65hgq" sourceRef="BoundaryEvent_InstantiateApplicationFailed" targetRef="Task_RemoveAuxiliarySecretOnFail" />
+    <bpmn:callActivity id="Activity_Set_Revision_Desc" name="Set revision and description" calledElement="subwf_helm_history"
+    camunda:asyncBefore="true" camunda:asyncAfter="true">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="lastHistory">true</camunda:inputParameter>
+          <camunda:outputParameter name="revision">
+            <camunda:script scriptFormat="groovy">execution.getVariable("revision")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="description">
+            <camunda:script scriptFormat="groovy">execution.getVariable("description")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0bvqup4</bpmn:incoming>
+      <bpmn:outgoing>Flow_06qxq1q</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="Activity_VerifyApplicationInstalled" name="Verify Application Installed" camunda:asyncAfter="true"
+    calledElement="subwf_verify_application_deployed">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_033geoa</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1wityiv</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_VerifyApplicationInstalled" attachedToRef="Activity_VerifyApplicationInstalled">
+      <bpmn:outgoing>SequenceFlow_11g7dhd</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_15zmqnz" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_11g7dhd" sourceRef="BoundaryEvent_VerifyApplicationInstalled" targetRef="Task_RemoveAuxiliarySecretOnFail" />
+    <bpmn:callActivity id="Activity_Check_Image_PullSecret" name="Check and Create Image Pull Secret" calledElement="subwf_pull_secret_create">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1nlc8od</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0zcpcfw</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_CheckImagePullSecretFailed" attachedToRef="Activity_Check_Image_PullSecret">
+      <bpmn:outgoing>Flow_0658y6m</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_033geoa" sourceRef="Activity_Instantiate_Application" targetRef="Activity_VerifyApplicationInstalled" />
+    <bpmn:sequenceFlow id="SequenceFlow_1wityiv" sourceRef="Activity_VerifyApplicationInstalled" targetRef="Task_RemoveAuxiliarySecretOnSuccess" />
+    <bpmn:serviceTask id="Task_Instantiate_CalculateDelay" name="Calculate Delay and set app timeout" camunda:asyncAfter="true" camunda:delegateExpression="${calculateCamundaDelay}">
+      <bpmn:incoming>Flow_0wir72p</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1nlc8od</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1yagp7t" sourceRef="Activity_Publish_Lifecycle_Message_End" targetRef="EndEvent_InstantiateSuccessful" />
+    <bpmn:sequenceFlow id="SequenceFlow_1j7g19p" sourceRef="Activity_Publish_Lifecycle_Message_Error_End" targetRef="EndEvent_Instantiate_Error" />
+    <bpmn:sequenceFlow id="SequenceFlow_1c3ikt0" sourceRef="Task_LogInstantiateFailed" targetRef="Activity_Publish_Lifecycle_Message_Error_End" />
+    <bpmn:sequenceFlow id="SequenceFlow_1jka8a7" sourceRef="Task_SetWorkflowStatus" targetRef="Activity_Publish_Lifecycle_Message_End" />
+    <bpmn:boundaryEvent id="BoundaryEvent_SetRevisionDescriptionFailed" attachedToRef="Activity_Set_Revision_Desc">
+      <bpmn:outgoing>Flow_0d0er0q</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Task_CreateAuxiliarySecret" name="Create Auxiliary Secret" camunda:asyncAfter="true" camunda:delegateExpression="${createAuxiliarySecret}">
+      <bpmn:incoming>SequenceFlow_0zcpcfw</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1evnczv</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1evnczv" sourceRef="Task_CreateAuxiliarySecret" targetRef="Activity_Instantiate_Application" />
+    <bpmn:boundaryEvent id="BoundaryEvent_CreateAuxiliarySecretFailed" attachedToRef="Task_CreateAuxiliarySecret">
+      <bpmn:outgoing>Flow_1aerai4</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0jita0k" />
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Task_RemoveAuxiliarySecretOnSuccess" name="Remove Auxiliary Secret" camunda:delegateExpression="${deleteAuxiliarySecret}">
+      <bpmn:incoming>SequenceFlow_1wityiv</bpmn:incoming>
+      <bpmn:outgoing>Flow_0bvqup4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_RemoveAuxiliarySecretOnFail" name="Remove Auxiliary Secret" camunda:delegateExpression="${deleteAuxiliarySecret}">
+      <bpmn:incoming>SequenceFlow_1w65hgq</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_11g7dhd</bpmn:incoming>
+      <bpmn:outgoing>Flow_0j616jp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1jka8a7</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1yagp7t</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_Error_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1c3ikt0</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1j7g19p</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_publish_lifecycle_message_error" attachedToRef="Activity_Publish_Lifecycle_Message_Error_End">
+      <bpmn:outgoing>SequenceFlow_0hk9te5</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0hk9te5" sourceRef="BoundaryEvent_publish_lifecycle_message_error" targetRef="EndEvent_Instantiate_Error" />
+    <bpmn:boundaryEvent id="BoundaryEvent_publish_lifecycle_message" attachedToRef="Activity_Publish_Lifecycle_Message_End">
+      <bpmn:outgoing>Flow_0v53a2f</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1nlc8od" sourceRef="Task_Instantiate_CalculateDelay" targetRef="Activity_Check_Image_PullSecret" />
+    <bpmn:sequenceFlow id="SequenceFlow_0zcpcfw" sourceRef="Activity_Check_Image_PullSecret" targetRef="Task_CreateAuxiliarySecret" />
+    <bpmn:sequenceFlow id="SequenceFlow_1aaiyk9" sourceRef="Task_Instantiate_Validate" targetRef="Task_Instantiate_Check_Namespace" />
+    <bpmn:scriptTask id="Script_Log_Validation_Failures" name="Log Instantiate Failed" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0qaf03y</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0vbta4c</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+        def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.InstantiateFailed");
+        String errorOutput = (String) execution.getVariable("errorMessage");
+        if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+        execution.setVariable("message",errorOutput);
+        } else {
+        execution.setVariable("message","Un-Known exception occured");
+        }
+        logger.error("Failed to create node due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0vbta4c" sourceRef="Script_Log_Validation_Failures" targetRef="Instantiate_Validation_Error_Event" />
+    <bpmn:endEvent id="Instantiate_Validation_Error_Event" name="VALIDATION_ERROR_END">
+      <bpmn:incoming>SequenceFlow_0vbta4c</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_0jyei3m" />
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="Event_0adc0w1" attachedToRef="Task_Instantiate_Check_Namespace">
+      <bpmn:outgoing>Flow_0iplqnh</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0cnmim6" />
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Task_Instantiate_Check_Namespace" name="Check Evnfm Namespace" camunda:delegateExpression="${checkEvnfmNamespace}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="namespace">
+            <camunda:script scriptFormat="groovy">execution.getVariable("namespace")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartUrl">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartUrl")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="additionalParams">
+            <camunda:script scriptFormat="groovy">execution.getVariable("additionalParams")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1aaiyk9</bpmn:incoming>
+      <bpmn:outgoing>Flow_0wir72p</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0wir72p" sourceRef="Task_Instantiate_Check_Namespace" targetRef="Task_Instantiate_CalculateDelay" />
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnSuccess" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_06qxq1q</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ysnray</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_1aerai4</bpmn:incoming>
+      <bpmn:incoming>Flow_0j616jp</bpmn:incoming>
+      <bpmn:incoming>Flow_0658y6m</bpmn:incoming>
+      <bpmn:incoming>Flow_0d0er0q</bpmn:incoming>
+      <bpmn:incoming>Flow_1e2ogv4</bpmn:incoming>
+      <bpmn:outgoing>Flow_1etn21k</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1aerai4" sourceRef="BoundaryEvent_CreateAuxiliarySecretFailed" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_1etn21k" sourceRef="Task_RemoveTemporaryFilesOnFailure" targetRef="Task_LogInstantiateFailed" />
+    <bpmn:sequenceFlow id="Flow_0j616jp" sourceRef="Task_RemoveAuxiliarySecretOnFail" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnValidationFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_0iplqnh</bpmn:incoming>
+      <bpmn:incoming>Flow_1m3b8zq</bpmn:incoming>
+      <bpmn:outgoing>Flow_0qaf03y</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0iplqnh" sourceRef="Event_0adc0w1" targetRef="Task_RemoveTemporaryFilesOnValidationFailure" />
+    <bpmn:sequenceFlow id="Flow_1m3b8zq" sourceRef="BoundaryEvent_InstantiateValidateFailed" targetRef="Task_RemoveTemporaryFilesOnValidationFailure" />
+    <bpmn:sequenceFlow id="Flow_0qaf03y" sourceRef="Task_RemoveTemporaryFilesOnValidationFailure" targetRef="Script_Log_Validation_Failures" />
+    <bpmn:sequenceFlow id="Flow_0bvqup4" sourceRef="Task_RemoveAuxiliarySecretOnSuccess" targetRef="Activity_Set_Revision_Desc" />
+    <bpmn:sequenceFlow id="Flow_06qxq1q" sourceRef="Activity_Set_Revision_Desc" targetRef="Task_RemoveTemporaryFilesOnSuccess" />
+    <bpmn:sequenceFlow id="Flow_0ysnray" sourceRef="Task_RemoveTemporaryFilesOnSuccess" targetRef="Task_SetWorkflowStatus" />
+    <bpmn:sequenceFlow id="Flow_0658y6m" sourceRef="BoundaryEvent_CheckImagePullSecretFailed" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_0d0er0q" sourceRef="BoundaryEvent_SetRevisionDescriptionFailed" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:boundaryEvent id="Event_1cezj5m" attachedToRef="Task_RemoveAuxiliarySecretOnSuccess">
+      <bpmn:outgoing>Flow_1e2ogv4</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1k55xpy" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_0v53a2f" sourceRef="BoundaryEvent_publish_lifecycle_message" targetRef="Task_LogInstantiateFailed" />
+    <bpmn:sequenceFlow id="Flow_1e2ogv4" sourceRef="Event_1cezj5m" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+  </bpmn:process>
+  <bpmn:error id="Error_06vd60v" name="InstantiateFailed" errorCode="error.common.instantiate.failed" />
+  <bpmn:error id="Error_0jyei3m" name="Validation_Failed" errorCode="error.instantiate.validation.failed" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="InstantiateApplication__top">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="153" y="185" width="36" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1ny9zlg_di" bpmnElement="Task_Instantiate_Validate">
+        <dc:Bounds x="240" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0bth29l_di" bpmnElement="Activity_Instantiate_Application">
+        <dc:Bounds x="1210" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0pzei6z_di" bpmnElement="EndEvent_InstantiateSuccessful">
+        <dc:Bounds x="2242" y="142" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2248" y="118" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0zeqkyv_di" bpmnElement="EndEvent_Instantiate_Error">
+        <dc:Bounds x="1092" y="932" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1076" y="978" width="67" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_12dkwfd_di" bpmnElement="Task_LogInstantiateFailed">
+        <dc:Bounds x="1060" y="650" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_1rfi5ct_di" bpmnElement="Task_SetWorkflowStatus">
+        <dc:Bounds x="1950" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1nblvnv_di" bpmnElement="Activity_Set_Revision_Desc">
+        <dc:Bounds x="1650" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0nh6vi7_di" bpmnElement="Activity_VerifyApplicationInstalled">
+        <dc:Bounds x="1359" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_16yuog4_di" bpmnElement="Activity_Check_Image_PullSecret">
+        <dc:Bounds x="742" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0i1hrr3_di" bpmnElement="Task_Instantiate_CalculateDelay">
+        <dc:Bounds x="597" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0t4gee0_di" bpmnElement="Task_CreateAuxiliarySecret">
+        <dc:Bounds x="1060" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1sb0t9o_di" bpmnElement="Task_RemoveAuxiliarySecretOnSuccess">
+        <dc:Bounds x="1518" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_04hm66x_di" bpmnElement="Task_RemoveAuxiliarySecretOnFail">
+        <dc:Bounds x="1209" y="290" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0mwnn8v_di" bpmnElement="Activity_Publish_Lifecycle_Message_End">
+        <dc:Bounds x="2100" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0qmvdhc_di" bpmnElement="Activity_Publish_Lifecycle_Message_Error_End">
+        <dc:Bounds x="1060" y="790" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0qt69o4_di" bpmnElement="Script_Log_Validation_Failures">
+        <dc:Bounds x="670" y="650" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0rx0c1x_di" bpmnElement="Instantiate_Validation_Error_Event">
+        <dc:Bounds x="629" y="802" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="609" y="845" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1a5qa95_di" bpmnElement="Task_Instantiate_Check_Namespace">
+        <dc:Bounds x="420" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1cvulom_di" bpmnElement="Task_RemoveTemporaryFilesOnSuccess">
+        <dc:Bounds x="1800" y="120" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_104zwy3_di" bpmnElement="Task_RemoveTemporaryFilesOnFailure">
+        <dc:Bounds x="1060" y="400" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_067y69d_di" bpmnElement="Task_RemoveTemporaryFilesOnValidationFailure">
+        <dc:Bounds x="430" y="650" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0i6jnl3_di" bpmnElement="Event_1cezj5m">
+        <dc:Bounds x="1550" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0adc0w1_di" bpmnElement="Event_0adc0w1">
+        <dc:Bounds x="452" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1fkkotx_di" bpmnElement="BoundaryEvent_publish_lifecycle_message">
+        <dc:Bounds x="2100" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0hg76a1_di" bpmnElement="BoundaryEvent_publish_lifecycle_message_error">
+        <dc:Bounds x="1042" y="852" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_14zfucr_di" bpmnElement="BoundaryEvent_CreateAuxiliarySecretFailed">
+        <dc:Bounds x="1092" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_19i2at2_di" bpmnElement="BoundaryEvent_SetRevisionDescriptionFailed">
+        <dc:Bounds x="1685" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_11w6qh9_di" bpmnElement="BoundaryEvent_CheckImagePullSecretFailed">
+        <dc:Bounds x="774" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1mmw37g_di" bpmnElement="BoundaryEvent_VerifyApplicationInstalled">
+        <dc:Bounds x="1391" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0wd41y7_di" bpmnElement="BoundaryEvent_InstantiateApplicationFailed">
+        <dc:Bounds x="1241" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0e18yzb_di" bpmnElement="BoundaryEvent_InstantiateValidateFailed">
+        <dc:Bounds x="272" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_16om4u1_di" bpmnElement="SequenceFlow_Start_InstantiateValidate">
+        <di:waypoint x="188" y="160" />
+        <di:waypoint x="240" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1w65hgq_di" bpmnElement="SequenceFlow_1w65hgq">
+        <di:waypoint x="1259" y="218" />
+        <di:waypoint x="1259" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_11g7dhd_di" bpmnElement="SequenceFlow_11g7dhd">
+        <di:waypoint x="1409" y="218" />
+        <di:waypoint x="1409" y="330" />
+        <di:waypoint x="1309" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_033geoa_di" bpmnElement="SequenceFlow_033geoa">
+        <di:waypoint x="1310" y="160" />
+        <di:waypoint x="1359" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1wityiv_di" bpmnElement="SequenceFlow_1wityiv">
+        <di:waypoint x="1459" y="160" />
+        <di:waypoint x="1518" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1yagp7t_di" bpmnElement="SequenceFlow_1yagp7t">
+        <di:waypoint x="2200" y="160" />
+        <di:waypoint x="2242" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1j7g19p_di" bpmnElement="SequenceFlow_1j7g19p">
+        <di:waypoint x="1110" y="870" />
+        <di:waypoint x="1110" y="932" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1c3ikt0_di" bpmnElement="SequenceFlow_1c3ikt0">
+        <di:waypoint x="1110" y="730" />
+        <di:waypoint x="1110" y="790" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1jka8a7_di" bpmnElement="SequenceFlow_1jka8a7">
+        <di:waypoint x="2050" y="160" />
+        <di:waypoint x="2100" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1evnczv_di" bpmnElement="SequenceFlow_1evnczv">
+        <di:waypoint x="1160" y="160" />
+        <di:waypoint x="1210" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0hk9te5_di" bpmnElement="SequenceFlow_0hk9te5">
+        <di:waypoint x="1060" y="888" />
+        <di:waypoint x="1060" y="950" />
+        <di:waypoint x="1092" y="950" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1nlc8od_di" bpmnElement="SequenceFlow_1nlc8od">
+        <di:waypoint x="697" y="160" />
+        <di:waypoint x="742" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0zcpcfw_di" bpmnElement="SequenceFlow_0zcpcfw">
+        <di:waypoint x="842" y="160" />
+        <di:waypoint x="1060" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1aaiyk9_di" bpmnElement="SequenceFlow_1aaiyk9">
+        <di:waypoint x="340" y="160" />
+        <di:waypoint x="420" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0vbta4c_di" bpmnElement="SequenceFlow_0vbta4c">
+        <di:waypoint x="720" y="730" />
+        <di:waypoint x="720" y="766" />
+        <di:waypoint x="647" y="766" />
+        <di:waypoint x="647" y="802" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0wir72p_di" bpmnElement="Flow_0wir72p">
+        <di:waypoint x="520" y="160" />
+        <di:waypoint x="597" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1aerai4_di" bpmnElement="Flow_1aerai4">
+        <di:waypoint x="1110" y="218" />
+        <di:waypoint x="1110" y="400" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1etn21k_di" bpmnElement="Flow_1etn21k">
+        <di:waypoint x="1110" y="480" />
+        <di:waypoint x="1110" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0j616jp_di" bpmnElement="Flow_0j616jp">
+        <di:waypoint x="1259" y="370" />
+        <di:waypoint x="1259" y="440" />
+        <di:waypoint x="1160" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0iplqnh_di" bpmnElement="Flow_0iplqnh">
+        <di:waypoint x="470" y="218" />
+        <di:waypoint x="470" y="650" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1m3b8zq_di" bpmnElement="Flow_1m3b8zq">
+        <di:waypoint x="290" y="218" />
+        <di:waypoint x="290" y="690" />
+        <di:waypoint x="430" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qaf03y_di" bpmnElement="Flow_0qaf03y">
+        <di:waypoint x="530" y="690" />
+        <di:waypoint x="670" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0bvqup4_di" bpmnElement="Flow_0bvqup4">
+        <di:waypoint x="1618" y="160" />
+        <di:waypoint x="1650" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06qxq1q_di" bpmnElement="Flow_06qxq1q">
+        <di:waypoint x="1750" y="160" />
+        <di:waypoint x="1800" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ysnray_di" bpmnElement="Flow_0ysnray">
+        <di:waypoint x="1900" y="160" />
+        <di:waypoint x="1950" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0658y6m_di" bpmnElement="Flow_0658y6m">
+        <di:waypoint x="792" y="218" />
+        <di:waypoint x="792" y="440" />
+        <di:waypoint x="1060" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0d0er0q_di" bpmnElement="Flow_0d0er0q">
+        <di:waypoint x="1703" y="218" />
+        <di:waypoint x="1703" y="440" />
+        <di:waypoint x="1160" y="440" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0v53a2f_di" bpmnElement="Flow_0v53a2f">
+        <di:waypoint x="2118" y="218" />
+        <di:waypoint x="2118" y="690" />
+        <di:waypoint x="1160" y="690" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1e2ogv4_di" bpmnElement="Flow_1e2ogv4">
+        <di:waypoint x="1568" y="218" />
+        <di:waypoint x="1568" y="440" />
+        <di:waypoint x="1160" y="440" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

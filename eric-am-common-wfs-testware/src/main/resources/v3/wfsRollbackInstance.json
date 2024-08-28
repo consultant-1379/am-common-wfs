@@ -1,0 +1,7 @@
+{
+  "revisionNumber": "1",
+  "lifecycleOperationId": "my-id",
+  "namespace": "wfs-acceptance-v2-UNIQUE_NAME",
+  "state": "starting",
+  "helmClientVersion": "3.8"
+}

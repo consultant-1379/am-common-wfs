@@ -1,0 +1,23 @@
+{
+  "workflowQueries":[
+    {
+      "instanceId":"a4233dd0-cd63-11e9-9fd9-4615cf3f00bd",
+      "definitionKey":"InstantiateApplication__top",
+      "chartName":"stable/mysql",
+      "chartUrl":null,
+      "chartVersion":"0.13.0",
+      "releaseName":"existing-release",
+      "namespace":"default",
+      "userId":"UNKNOWN",
+      "workflowState":"FAILED",
+      "message":"{\"detail\":\"A resource named existing-release already exists. Please use a different name or delete the resource with this name.\",\"status\":\"422\"}",
+      "startTime":"1551890124328",
+      "additionalParams":null,
+      "revision":null,
+      "revisionDescription":null
+    }
+  ],
+  "metadata":{
+    "count":1
+  }
+}

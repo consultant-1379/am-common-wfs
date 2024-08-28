@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~ COPYRIGHT Ericsson 2024
+ ~
+ ~
+ ~
+ ~ The copyright to the computer program(s) herein is the property of
+ ~
+ ~ Ericsson Inc. The programs may be used and/or copied only with written
+ ~
+ ~ permission from Ericsson Inc. or in accordance with the terms and
+ ~
+ ~ conditions stipulated in the agreement/contract under which the
+ ~
+ ~ program(s) have been supplied.
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+<!DOCTYPE suppressions PUBLIC
+  "-//Puppy Crawl//DTD Suppressions 1.1//EN"
+  "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+
+<suppressions>
+  <suppress checks="HideUtilityClassConstructor" files="ApplicationServer.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="TestRunner.java"/>
+  <suppress checks="ParameterNumber" files="ResourceControllerImpl.java"/>
+  <suppress checks="ParameterNumber" files="ResourceController.java"/>
+  <suppress checks="ParameterNumber" files="ResourceApiControllerImpl.java"/>
+  <suppress checks="ParameterNumber" files="ResourceApi.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="LongRunningCommandExecutorRunner.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="CommonServicesUtils.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="CommandTaskConstants.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="CommandUtils.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="DataParser.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="CommonUtils.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="LongRunningCommandHttpServer.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="CreateCommandUtils.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="ValidateArguments.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="KubeClientUtils.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="KubeCommandUtils.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="BpmKubeApiExceptionHandler.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="KubeApiExceptionUtils.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="MapUtils.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="MessageConstants.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="ParameterErrorMessage.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="ControllerUtilities.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="DefinitionKey.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="HealthCheckUtil.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="JWTDecoder.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="RestPayloadValidationUtils.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="Utility.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="CommonWfsAcceptanceTestSteps.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="FileUtilities.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="ValidateParams.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="ValidateReleaseName.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="ValidateRevisionNumber.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="KubeClientUtils.java"/>
+  <suppress checks="HideUtilityClassConstructor" files="ProvideCommandParamsUtils.java"/>
+  <suppress checks="IllegalThrows" files="IdempotencyAspect.java"/>
+<!--
+  <suppress checks="TypeName"
+            files="V7_12__MigrateFrom7v11To7v12|V7_13__MigrateFrom7v12To7v13|V7_14__MigrateFrom7v13To7v14|V7_15__MigrateFrom7v14To7v15|V7_16__MigrateFrom7v15To7v16|V7_17__MigrateFrom7v16To7v17|V7_18__MigrateFrom7v17To7v18"/>
+-->
+  <suppress checks="TypeName" files="(/?.*/)?V\d+\w+.java$"/>
+  <suppress checks="TypeName" files="(/?.*/)?R__\w+.java$"/>
+</suppressions>

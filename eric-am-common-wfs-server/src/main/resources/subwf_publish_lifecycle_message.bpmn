@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_08buq7i" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="2.2.4">
+  <bpmn:process id="subwf_publish_lifecycle_message" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>SequenceFlow_1ez60o2</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="Task_Publish_Lifecycle_Message_End" name="Task Publish Lifecycle Message End">
+      <bpmn:incoming>SequenceFlow_messageSent</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="ExclusiveGateway_1cuqv2z" default="SequenceFlow_camunda_delay">
+      <bpmn:incoming>SequenceFlow_1v2cce5</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_messageSent</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_camunda_delay</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_0i331pr</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_1v2cce5" sourceRef="Task_Publish_Lifecycle_Message" targetRef="ExclusiveGateway_1cuqv2z" />
+    <bpmn:intermediateCatchEvent id="IntermediateCatchEvent_delay" name="Delay">
+      <bpmn:incoming>SequenceFlow_camunda_delay</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0norrma</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0v2z20i">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">${messageBusRetryInterval}</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_messageSent" name="message sent" sourceRef="ExclusiveGateway_1cuqv2z" targetRef="Task_Publish_Lifecycle_Message_End">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("messageSent")}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SequenceFlow_0norrma" sourceRef="IntermediateCatchEvent_delay" targetRef="Task_Publish_Lifecycle_Message" />
+    <bpmn:serviceTask id="Task_Publish_Lifecycle_Message" name="Publish Lifecycle message" camunda:delegateExpression="${publishLifecycleMessage}">
+      <bpmn:incoming>SequenceFlow_0norrma</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0fa5wk8</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1v2cce5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_camunda_delay" name="message retry interval" sourceRef="ExclusiveGateway_1cuqv2z" targetRef="IntermediateCatchEvent_delay" />
+    <bpmn:sequenceFlow id="SequenceFlow_1ez60o2" sourceRef="StartEvent_1" targetRef="Task_1mh80gb" />
+    <bpmn:serviceTask id="Task_1mh80gb" name="Set retry time" camunda:delegateExpression="${messageBusRetryTime}">
+      <bpmn:incoming>SequenceFlow_1ez60o2</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0fa5wk8</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0fa5wk8" sourceRef="Task_1mh80gb" targetRef="Task_Publish_Lifecycle_Message" />
+    <bpmn:sequenceFlow id="SequenceFlow_0i331pr" name="message retries completed" sourceRef="ExclusiveGateway_1cuqv2z" targetRef="EndEvent_1mzcqf3">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("messageRetriesCompleted")}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="EndEvent_1mzcqf3" name="Unable to send message">
+      <bpmn:incoming>SequenceFlow_0i331pr</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_1gx9xxq" />
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmn:error id="Error_06htz0q" name="Publish lifecycle message failed" errorCode="PublishLifecycleMessageFailed" />
+  <bpmn:error id="Error_1gx9xxq" name="Message_Send_Failed" errorCode="error.message.send" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="subwf_publish_lifecycle_message">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="105" y="240" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0rzisw0_di" bpmnElement="Task_Publish_Lifecycle_Message_End">
+        <dc:Bounds x="822" y="240" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="808" y="283" width="68" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_1cuqv2z_di" bpmnElement="ExclusiveGateway_1cuqv2z" isMarkerVisible="true">
+        <dc:Bounds x="566" y="233" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1v2cce5_di" bpmnElement="SequenceFlow_1v2cce5">
+        <di:waypoint x="492" y="258" />
+        <di:waypoint x="566" y="258" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="IntermediateCatchEvent_10g8mfg_di" bpmnElement="IntermediateCatchEvent_delay">
+        <dc:Bounds x="573" y="83" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="616" y="84" width="29" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0rw3ins_di" bpmnElement="SequenceFlow_messageSent">
+        <di:waypoint x="616" y="258" />
+        <di:waypoint x="822" y="258" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="687" y="240" width="70" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0norrma_di" bpmnElement="SequenceFlow_0norrma">
+        <di:waypoint x="573" y="101" />
+        <di:waypoint x="442" y="101" />
+        <di:waypoint x="442" y="218" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_1trczlc_di" bpmnElement="Task_Publish_Lifecycle_Message">
+        <dc:Bounds x="392" y="218" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_07d3yda_di" bpmnElement="SequenceFlow_camunda_delay">
+        <di:waypoint x="591" y="233" />
+        <di:waypoint x="591" y="119" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="608" y="173" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1ez60o2_di" bpmnElement="SequenceFlow_1ez60o2">
+        <di:waypoint x="141" y="258" />
+        <di:waypoint x="233" y="258" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_0xjydw3_di" bpmnElement="Task_1mh80gb">
+        <dc:Bounds x="233" y="218" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0fa5wk8_di" bpmnElement="SequenceFlow_0fa5wk8">
+        <di:waypoint x="333" y="258" />
+        <di:waypoint x="392" y="258" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0i331pr_di" bpmnElement="SequenceFlow_0i331pr">
+        <di:waypoint x="591" y="283" />
+        <di:waypoint x="591" y="395" />
+        <di:waypoint x="822" y="395" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="669" y="361" width="79" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_12ylfh6_di" bpmnElement="EndEvent_1mzcqf3">
+        <dc:Bounds x="822" y="377" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="803" y="420" width="75" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

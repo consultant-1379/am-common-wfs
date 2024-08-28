@@ -1,0 +1,8 @@
+{
+  "errorDetails": [
+    {
+      "parameterName": "clusterName",
+      "message": "clusterName must consist of alphanumeric characters. It can be given as just the name or ending with .config"
+    }
+  ]
+}

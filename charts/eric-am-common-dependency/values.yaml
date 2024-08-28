@@ -1,0 +1,47 @@
+#
+# COPYRIGHT Ericsson 2024
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+# Default values for eric-am-common-wfs-ui-dev-backend.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+global:
+  security:
+    tls:
+      enabled: false
+
+eric-lcm-helm-chart-registry:
+  env:
+    open:
+      DISABLE_METRICS: true
+      AUTH_ANONYMOUS_GET: true      #Temporary change until SM-66445 is done
+  ingress:
+    enabled: false
+    tls:
+      secretName: helm-registry-tls-secret
+    useHttpProxy: false
+    ingressClass: "nginx"
+  updateStrategy:
+    type: Recreate
+  brAgent:
+    enabled: false
+    backupTypeList:
+      - "DEFAULT"
+    security:
+      tls:
+        enabled: false
+  persistence:
+    persistentVolumeClaim:
+      size: 100Mi

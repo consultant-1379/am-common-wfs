@@ -1,0 +1,467 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_03mi9ft" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.7.0">
+  <bpmn:process id="ScaleApplication__top" name="Scale Application" camunda:asyncAfter="true" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:startEvent id="StartScaleEvent_1" name="START">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="releaseName" label="releaseName" type="string" />
+          <camunda:formField id="chartUrl" label="chartUrl" type="string" />
+          <camunda:formField id="chartName" label="chartName" type="string" />
+          <camunda:formField id="chartVersion" label="chartVersion" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>SequenceFlow_0onvbrq</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0onvbrq" sourceRef="StartScaleEvent_1" targetRef="task_ValidateScaleInput" />
+    <bpmn:serviceTask id="task_ValidateScaleInput" name="Validate Scale Input" camunda:delegateExpression="${upgradeValidationTask}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartUrl">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartUrl")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion")</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0onvbrq</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1kfgrf7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryEvent_validateScaleInput" attachedToRef="task_ValidateScaleInput">
+      <bpmn:outgoing>Flow_0ht6pw1</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="BoundaryEvent_ScaleApplication" attachedToRef="Task_ScaleApplication">
+      <bpmn:outgoing>Flow_1bs4uwq</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:scriptTask id="Task_WorkflowStatusScale" name="Set Workflow Status" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0yl67w9</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1erb49e</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.scaleSuccess");
+String verifyOutput = (String) execution.getVariable("verifyAppResult");
+execution.setVariable("message",verifyOutput);
+logger.info(execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:endEvent id="EndEvent_Scale" name="END">
+      <bpmn:incoming>SequenceFlow_19616kt</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:scriptTask id="Task_LogScaleValue" name="Log Scale Failure" scriptFormat="groovy">
+      <bpmn:incoming>Flow_01bgo47</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1lu5z09</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.scaleFailed");
+String errorOutput = (String) execution.getVariable("errorMessage");
+if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+    execution.setVariable("message",errorOutput);
+} else {
+    execution.setVariable("message","unknown exception occured");
+}
+logger.error("Failed to Scale application due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:endEvent id="EndEvent_ErrorEventScale" name="ERROR END">
+      <bpmn:incoming>SequenceFlow_1bpe5wp</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0x00n85</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_1nnt68t" />
+    </bpmn:endEvent>
+    <bpmn:callActivity id="Task_ScaleApplication" name="Scale Application" camunda:asyncBefore="true" calledElement="subwf_helm_command">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="namespace">
+            <camunda:script scriptFormat="groovy">execution.getVariable("namespace")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="helmRepoRoot">
+            <camunda:script scriptFormat="groovy">execution.getVariable("helmRepoRoot")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="additionalParams">
+            <camunda:script scriptFormat="groovy">execution.getVariable("additionalParams")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="type">
+            <camunda:script scriptFormat="groovy">execution.setVariable("commandType", "upgrade")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartUrl">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartUrl")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:outputParameter name="command">
+            <camunda:script scriptFormat="groovy">execution.getVariable("command")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="commandOutput">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandOutput")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0zngcr7</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0h1avy3</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0sscb04</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_SetRevisionScale" name="Set revision and description" camunda:asyncBefore="true" camunda:asyncAfter="true"
+    calledElement="subwf_helm_history">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="lastHistory">true</camunda:inputParameter>
+          <camunda:outputParameter name="revision">
+            <camunda:script scriptFormat="groovy">execution.getVariable("revision")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="description">
+            <camunda:script scriptFormat="groovy">execution.getVariable("description")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0xxe1so</bpmn:incoming>
+      <bpmn:outgoing>Flow_1u0m035</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_VerifyScale" name="Verify Scale" camunda:asyncBefore="true" camunda:asyncAfter="true"
+    calledElement="subwf_verify_application_deployed">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0sscb04</bpmn:incoming>
+      <bpmn:outgoing>Flow_0xxe1so</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_VerifyScale" attachedToRef="CallActivity_VerifyScale">
+      <bpmn:outgoing>Flow_0nr4jby</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0q4upx2" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0zngcr7" sourceRef="Task_CheckImagePullsecretscale" targetRef="Task_ScaleApplication" />
+    <bpmn:callActivity id="Task_CheckImagePullsecretscale" name="Check and Create Image Pull Secret" camunda:asyncAfter="true"
+    calledElement="subwf_pull_secret_create">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_14flq2v</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0zngcr7</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_CheckImagePullSecretScale" attachedToRef="Task_CheckImagePullsecretscale">
+      <bpmn:outgoing>Flow_0pfm5eg</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0sscb04" sourceRef="Task_ScaleApplication" targetRef="CallActivity_VerifyScale" />
+    <bpmn:serviceTask id="Task_CheckReleaseLabelScale" name="Check For Release Label And Namespace" camunda:asyncBefore="true" camunda:delegateExpression="${checkReleaseResourcesExists}">
+      <bpmn:incoming>SequenceFlow_0i8tzt7</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_14flq2v</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryEvent_CheckReleaseLabelScale" attachedToRef="Task_CheckReleaseLabelScale">
+      <bpmn:outgoing>SequenceFlow_0h1avy3</bpmn:outgoing>
+      <bpmn:errorEventDefinition errorRef="Error_0qdu2np" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0h1avy3" sourceRef="BoundaryEvent_CheckReleaseLabelScale" targetRef="Task_ScaleApplication" />
+    <bpmn:serviceTask id="task_CalculateDelay" name="Calculate Delay and set app timeout" camunda:asyncAfter="true" camunda:delegateExpression="${calculateCamundaDelay}">
+      <bpmn:incoming>SequenceFlow_1kfgrf7</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0i8tzt7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1kfgrf7" sourceRef="task_ValidateScaleInput" targetRef="task_CalculateDelay" />
+    <bpmn:sequenceFlow id="SequenceFlow_0i8tzt7" sourceRef="task_CalculateDelay" targetRef="Task_CheckReleaseLabelScale" />
+    <bpmn:sequenceFlow id="SequenceFlow_1erb49e" sourceRef="Task_WorkflowStatusScale" targetRef="Activity_Publish_Lifecycle_Message_End" />
+    <bpmn:sequenceFlow id="SequenceFlow_19616kt" sourceRef="Activity_Publish_Lifecycle_Message_End" targetRef="EndEvent_Scale" />
+    <bpmn:sequenceFlow id="SequenceFlow_1lu5z09" sourceRef="Task_LogScaleValue" targetRef="Activity_Publish_Lifecycle_Message_Error_End" />
+    <bpmn:sequenceFlow id="SequenceFlow_1bpe5wp" sourceRef="Activity_Publish_Lifecycle_Message_Error_End" targetRef="EndEvent_ErrorEventScale" />
+    <bpmn:boundaryEvent id="BoundaryEvent_1yoef3e" attachedToRef="CallActivity_SetRevisionScale">
+      <bpmn:outgoing>Flow_19um3r9</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1erb49e</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_19616kt</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_Error_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1lu5z09</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1bpe5wp</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_publish_lifecycle_message_error" attachedToRef="Activity_Publish_Lifecycle_Message_Error_End">
+      <bpmn:outgoing>SequenceFlow_0x00n85</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0x00n85" sourceRef="BoundaryEvent_publish_lifecycle_message_error" targetRef="EndEvent_ErrorEventScale" />
+    <bpmn:boundaryEvent id="BoundaryEvent_publish_lifecycle_message" attachedToRef="Activity_Publish_Lifecycle_Message_End">
+      <bpmn:outgoing>Flow_1cq33aw</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_14flq2v" sourceRef="Task_CheckReleaseLabelScale" targetRef="Task_CheckImagePullsecretscale" />
+    <bpmn:scriptTask id="Task_Log_Validation_Failures" name="Log Scale Failure" scriptFormat="groovy">
+      <bpmn:incoming>Flow_06q92cj</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0mzj2c2</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.scaleFailed");
+String errorOutput = (String) execution.getVariable("errorMessage");
+if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+    execution.setVariable("message",errorOutput);
+} else {
+    execution.setVariable("message","unknown exception occured");
+}
+logger.error("Failed to Scale application due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0mzj2c2" sourceRef="Task_Log_Validation_Failures" targetRef="Scale_Validation_Error_Event" />
+    <bpmn:endEvent id="Scale_Validation_Error_Event" name="VALIDATION_ERROR_END">
+      <bpmn:incoming>SequenceFlow_0mzj2c2</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_0799mtf" />
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnSuccess" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_1u0m035</bpmn:incoming>
+      <bpmn:outgoing>Flow_0yl67w9</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnValidationFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_0ht6pw1</bpmn:incoming>
+      <bpmn:outgoing>Flow_06q92cj</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_06q92cj" sourceRef="Task_RemoveTemporaryFilesOnValidationFailure" targetRef="Task_Log_Validation_Failures" />
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_0pfm5eg</bpmn:incoming>
+      <bpmn:incoming>Flow_1bs4uwq</bpmn:incoming>
+      <bpmn:incoming>Flow_0nr4jby</bpmn:incoming>
+      <bpmn:incoming>Flow_19um3r9</bpmn:incoming>
+      <bpmn:incoming>Flow_1cq33aw</bpmn:incoming>
+      <bpmn:outgoing>Flow_01bgo47</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_01bgo47" sourceRef="Task_RemoveTemporaryFilesOnFailure" targetRef="Task_LogScaleValue" />
+    <bpmn:sequenceFlow id="Flow_0ht6pw1" sourceRef="BoundaryEvent_validateScaleInput" targetRef="Task_RemoveTemporaryFilesOnValidationFailure" />
+    <bpmn:sequenceFlow id="Flow_0pfm5eg" sourceRef="BoundaryEvent_CheckImagePullSecretScale" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_1bs4uwq" sourceRef="BoundaryEvent_ScaleApplication" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_0nr4jby" sourceRef="BoundaryEvent_VerifyScale" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_19um3r9" sourceRef="BoundaryEvent_1yoef3e" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_1cq33aw" sourceRef="BoundaryEvent_publish_lifecycle_message" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_0xxe1so" sourceRef="CallActivity_VerifyScale" targetRef="CallActivity_SetRevisionScale" />
+    <bpmn:sequenceFlow id="Flow_1u0m035" sourceRef="CallActivity_SetRevisionScale" targetRef="Task_RemoveTemporaryFilesOnSuccess" />
+    <bpmn:sequenceFlow id="Flow_0yl67w9" sourceRef="Task_RemoveTemporaryFilesOnSuccess" targetRef="Task_WorkflowStatusScale" />
+  </bpmn:process>
+  <bpmn:error id="Error_18bedhy" name="Error_3nf5nco" />
+  <bpmn:error id="Error_1nnt68t" name="ScaleFailed" errorCode="error.common.scale.failed" />
+  <bpmn:error id="Error_0qdu2np" name="Required Label Not Found" errorCode="error.com.missing.required.label" />
+  <bpmn:error id="Error_0799mtf" name="Validation_Failed" errorCode="error.scale.validation.error" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="ScaleApplication__top">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartScaleEvent_1">
+        <dc:Bounds x="153" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="153" y="225" width="36" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1t5tavx_di" bpmnElement="task_ValidateScaleInput">
+        <dc:Bounds x="243" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0p4vj98_di" bpmnElement="Task_WorkflowStatusScale">
+        <dc:Bounds x="1760" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0k0j8kj_di" bpmnElement="EndEvent_Scale">
+        <dc:Bounds x="2082" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2088" y="225" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0565t8l_di" bpmnElement="Task_LogScaleValue">
+        <dc:Bounds x="996" y="550" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_16hisit_di" bpmnElement="EndEvent_ErrorEventScale">
+        <dc:Bounds x="1028" y="802" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1013" y="845" width="67" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_05kd3y5_di" bpmnElement="Task_ScaleApplication">
+        <dc:Bounds x="1032" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_086sw0b_di" bpmnElement="CallActivity_SetRevisionScale">
+        <dc:Bounds x="1440" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1x2g24m_di" bpmnElement="CallActivity_VerifyScale">
+        <dc:Bounds x="1241" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_19omvpb_di" bpmnElement="Task_CheckImagePullsecretscale">
+        <dc:Bounds x="890" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0yousw0_di" bpmnElement="Task_CheckReleaseLabelScale">
+        <dc:Bounds x="602" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1lmg8q2_di" bpmnElement="task_CalculateDelay">
+        <dc:Bounds x="380" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1ekjljx_di" bpmnElement="Activity_Publish_Lifecycle_Message_End">
+        <dc:Bounds x="1920" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1fvgt0z_di" bpmnElement="Activity_Publish_Lifecycle_Message_Error_End">
+        <dc:Bounds x="996" y="670" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_00fsi74_di" bpmnElement="Task_Log_Validation_Failures">
+        <dc:Bounds x="232" y="510" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0es9wjk_di" bpmnElement="Scale_Validation_Error_Event">
+        <dc:Bounds x="264" y="644" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="244" y="687" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_01krjv7_di" bpmnElement="Task_RemoveTemporaryFilesOnSuccess">
+        <dc:Bounds x="1600" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1lw950l_di" bpmnElement="Task_RemoveTemporaryFilesOnValidationFailure">
+        <dc:Bounds x="232" y="390" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1r1srhb_di" bpmnElement="Task_RemoveTemporaryFilesOnFailure">
+        <dc:Bounds x="1000" y="430" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1btrmti_di" bpmnElement="BoundaryEvent_publish_lifecycle_message">
+        <dc:Bounds x="1923" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1lkluq7_di" bpmnElement="BoundaryEvent_publish_lifecycle_message_error">
+        <dc:Bounds x="978" y="732" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0jwy0pm_di" bpmnElement="BoundaryEvent_1yoef3e">
+        <dc:Bounds x="1441" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_18y9q5l_di" bpmnElement="BoundaryEvent_CheckReleaseLabelScale">
+        <dc:Bounds x="634" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1c3uox7_di" bpmnElement="BoundaryEvent_CheckImagePullSecretScale">
+        <dc:Bounds x="920" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1coydsq_di" bpmnElement="BoundaryEvent_VerifyScale">
+        <dc:Bounds x="1275" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0j7tdhz_di" bpmnElement="BoundaryEvent_ScaleApplication">
+        <dc:Bounds x="1064" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_15g289u_di" bpmnElement="BoundaryEvent_validateScaleInput">
+        <dc:Bounds x="264" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0onvbrq_di" bpmnElement="SequenceFlow_0onvbrq">
+        <di:waypoint x="189" y="200" />
+        <di:waypoint x="243" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0zngcr7_di" bpmnElement="SequenceFlow_0zngcr7">
+        <di:waypoint x="990" y="200" />
+        <di:waypoint x="1032" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0sscb04_di" bpmnElement="SequenceFlow_0sscb04">
+        <di:waypoint x="1132" y="200" />
+        <di:waypoint x="1241" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0h1avy3_di" bpmnElement="SequenceFlow_0h1avy3">
+        <di:waypoint x="652" y="142" />
+        <di:waypoint x="652" y="80" />
+        <di:waypoint x="1082" y="80" />
+        <di:waypoint x="1082" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1kfgrf7_di" bpmnElement="SequenceFlow_1kfgrf7">
+        <di:waypoint x="343" y="200" />
+        <di:waypoint x="380" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0i8tzt7_di" bpmnElement="SequenceFlow_0i8tzt7">
+        <di:waypoint x="480" y="200" />
+        <di:waypoint x="602" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1erb49e_di" bpmnElement="SequenceFlow_1erb49e">
+        <di:waypoint x="1860" y="200" />
+        <di:waypoint x="1920" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_19616kt_di" bpmnElement="SequenceFlow_19616kt">
+        <di:waypoint x="2020" y="200" />
+        <di:waypoint x="2082" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1lu5z09_di" bpmnElement="SequenceFlow_1lu5z09">
+        <di:waypoint x="1046" y="630" />
+        <di:waypoint x="1046" y="670" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1bpe5wp_di" bpmnElement="SequenceFlow_1bpe5wp">
+        <di:waypoint x="1046" y="750" />
+        <di:waypoint x="1046" y="802" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0x00n85_di" bpmnElement="SequenceFlow_0x00n85">
+        <di:waypoint x="996" y="768" />
+        <di:waypoint x="996" y="820" />
+        <di:waypoint x="1028" y="820" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_14flq2v_di" bpmnElement="SequenceFlow_14flq2v">
+        <di:waypoint x="702" y="200" />
+        <di:waypoint x="890" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0mzj2c2_di" bpmnElement="SequenceFlow_0mzj2c2">
+        <di:waypoint x="282" y="590" />
+        <di:waypoint x="282" y="644" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06q92cj_di" bpmnElement="Flow_06q92cj">
+        <di:waypoint x="282" y="470" />
+        <di:waypoint x="282" y="510" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01bgo47_di" bpmnElement="Flow_01bgo47">
+        <di:waypoint x="1047" y="510" />
+        <di:waypoint x="1046" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ht6pw1_di" bpmnElement="Flow_0ht6pw1">
+        <di:waypoint x="282" y="258" />
+        <di:waypoint x="282" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pfm5eg_di" bpmnElement="Flow_0pfm5eg">
+        <di:waypoint x="938" y="258" />
+        <di:waypoint x="938" y="470" />
+        <di:waypoint x="1000" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bs4uwq_di" bpmnElement="Flow_1bs4uwq">
+        <di:waypoint x="1082" y="258" />
+        <di:waypoint x="1082" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nr4jby_di" bpmnElement="Flow_0nr4jby">
+        <di:waypoint x="1293" y="258" />
+        <di:waypoint x="1293" y="470" />
+        <di:waypoint x="1100" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19um3r9_di" bpmnElement="Flow_19um3r9">
+        <di:waypoint x="1459" y="258" />
+        <di:waypoint x="1459" y="470" />
+        <di:waypoint x="1100" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1cq33aw_di" bpmnElement="Flow_1cq33aw">
+        <di:waypoint x="1941" y="258" />
+        <di:waypoint x="1941" y="470" />
+        <di:waypoint x="1100" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xxe1so_di" bpmnElement="Flow_0xxe1so">
+        <di:waypoint x="1341" y="200" />
+        <di:waypoint x="1440" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1u0m035_di" bpmnElement="Flow_1u0m035">
+        <di:waypoint x="1540" y="200" />
+        <di:waypoint x="1600" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0yl67w9_di" bpmnElement="Flow_0yl67w9">
+        <di:waypoint x="1700" y="200" />
+        <di:waypoint x="1760" y="200" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

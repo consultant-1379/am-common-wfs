@@ -1,0 +1,1496 @@
+#
+# COPYRIGHT Ericsson 2024
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+openapi: 3.0.3
+info:
+  version: 0.0.1
+  title: Common Workflow Service
+  description: >
+    Common Workflow Service
+
+servers:
+  - url: '{protocol}://{hostname}/{basePath}'
+    variables:
+      protocol:
+        default: https
+      hostname:
+        default: am-common-wfs
+      basePath:
+        default: api
+
+tags:
+  - name: Internal
+    description: Groups all the internal operations.
+  - name: Lcm
+    description: Groups all lifecycle management operations.
+
+paths:
+  /lcm/v3/resources/{releaseName}/instantiate:
+    post:
+      tags:
+        - Lcm
+      description: |
+        Create resource
+        The POST method creates a new resource.
+      operationId: instantiateV3Resource
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+      requestBody:
+        description: The resource creation parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstantiateInfo'
+      responses:
+        '202':
+          $ref: '#/components/responses/Accepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /lcm/v3/resources/{releaseName}:
+    get:
+      tags:
+        - Lcm
+      operationId: getHistoryV3Resource
+      parameters:
+        - name: releaseName
+          in: path
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+        - name: instanceId
+          description: >
+            id of the instance to query
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >
+            OK - Information about the history of the resource
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /lcm/v3/resources/{releaseName}/terminate:
+    post:
+      tags:
+        - Lcm
+      operationId: terminateV3Resource
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+        - name: applicationTimeOut
+          in: query
+          description: |
+            Maximum time allocated for application instantiation.
+          schema:
+            type: string
+        - name: skipVerification
+          in: query
+          description: |
+            Flag indicating whether to bypass the Application Verification Checks.
+          schema:
+            type: boolean
+            default: false
+        - name: cleanUpResources
+          in: query
+          description: |
+            Remove Persistent Volume Claims and Persistent Volumes of an application.
+          schema:
+            type: boolean
+            default: false
+        - name: clusterName
+          in: query
+          description: |
+            Cluster name where the resource is located.
+          schema:
+            type: string
+            pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+        - name: lifecycleOperationId
+          in: query
+          description: |
+            the lifecycle operation id related to this request.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+        - name: state
+          in: query
+          description: |
+            the current lifecycle state of the lifecycle operation id.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "STATE_BLANK_EMPTY"
+          x-required-message: 'STATE_NULL'
+        - name: skipJobVerification
+          in: query
+          description: |
+            Flag indicating whether to bypass the Application Verification Checks.
+          schema:
+            type: boolean
+            default: false
+        - name: namespace
+          in: query
+          description: |
+            The namespace the resource is located in.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "NAMESPACE_EMPTY"
+          x-required-message: 'NAMESPACE_NULL'
+        - name: helmClientVersion
+          in: query
+          description: |
+            Helm version to use for operation.
+          schema:
+            type: string
+      responses:
+        '202':
+          $ref: '#/components/responses/Accepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /lcm/v3/resources/{releaseName}/upgrade:
+    post:
+      tags:
+        - Lcm
+      operationId: upgradeV3Resource
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+      requestBody:
+        description: The upgrade resource parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpgradeInfo'
+      responses:
+        '202':
+          $ref: '#/components/responses/Accepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /lcm/v3/resources/{releaseName}/scale:
+    post:
+      tags:
+        - Lcm
+      operationId: scaleV3Resource
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+      requestBody:
+        description: The scale resource parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScaleInfo'
+      responses:
+        '202':
+          $ref: '#/components/responses/Accepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /lcm/v3/resources/{releaseName}/rollback:
+    post:
+      tags:
+        - Lcm
+      operationId: rollbackV3Resource
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+      requestBody:
+        description: The scale resource parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RollbackInfo'
+      responses:
+        '202':
+          $ref: '#/components/responses/Accepted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /internal/v2/namespaces/{namespace}/delete:
+    post:
+      tags:
+        - Internal
+      operationId: deleteNamespace
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: namespace
+          in: path
+          description: |
+            namespace of the resource.
+          schema:
+            type: string
+          required: true
+        - name: releaseName
+          in: query
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+        - name: applicationTimeOut
+          in: query
+          description: |
+            Maximum time allocated for application instantiation.
+          schema:
+            type: string
+        - name: clusterName
+          in: query
+          description: |
+            Cluster name where the resource is located.
+          schema:
+            type: string
+            pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+          required: true
+        - name: lifecycleOperationId
+          in: query
+          description: |
+            the lifecycle operation id related to this request.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+      responses:
+        '202':
+          $ref: '#/components/responses/AcceptedNoBody'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/kubernetes/pods/scale/down:
+    post:
+      tags:
+        - Internal
+      operationId: scaleDown
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The scale down resource parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InternalScaleInfo'
+      responses:
+        '202':
+          $ref: '#/components/responses/AcceptedNoBody'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/cluster/validate:
+    post:
+      tags:
+        - Internal
+      operationId: clusterConfigFileValidate
+      description: |
+        Internal api which is called from LCM to validate cluster config file.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+                - clusterConfig
+              properties:
+                clusterConfig:
+                  description: Cluster config file.
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: >
+            OK
+            Cluster config is validated successfully. The response body shall contain cluster host url.
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterServerDetailsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/kubernetes/pvcs/{releaseName}/delete:
+    post:
+      tags:
+        - Internal
+      operationId: deletePvcs
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+        - name: applicationTimeOut
+          in: query
+          description: |
+            Maximum time allocated for application instantiation.
+          schema:
+            type: string
+        - name: clusterName
+          in: query
+          description: |
+            Cluster name where the resource is located.
+          schema:
+            type: string
+            pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+        - name: lifecycleOperationId
+          in: query
+          description: |
+            the lifecycle operation id related to this request.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+        - name: state
+          in: query
+          description: |
+            the current lifecycle state of the lifecycle operation id.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "STATE_BLANK_EMPTY"
+          x-required-message: 'STATE_NULL'
+        - name: namespace
+          in: query
+          description: |
+            The namespace the resource is located in.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "NAMESPACE_EMPTY"
+          x-required-message: 'NAMESPACE_NULL'
+        - name: labels
+          in: query
+          description: |
+            List of labels for which pvcs need to be deleted
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '202':
+          $ref: '#/components/responses/AcceptedNoBody'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/kubernetes/secrets:
+    parameters:
+      - name: namespace
+        in: query
+        description: |
+          The namespace the resource is located in.
+        schema:
+          type: string
+          minLength: 1
+        required: true
+        x-message: "NAMESPACE_EMPTY"
+        x-required-message: 'NAMESPACE_NULL'
+      - name: clusterName
+        in: query
+        description: |
+          Cluster name where the resource is located.
+        schema:
+          type: string
+          pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+        x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+      - name: fetchTimeOut
+        in: query
+        description: |
+          The fetchTimeOut is the time needed to fetch the secret details from kubernetes
+        schema:
+          type: string
+        required: false
+    post:
+      tags:
+        - Internal
+      operationId: getSecretsInNamespaceWithMultipart
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: >
+            OK
+            Information about zero or more VNF instances was queried
+            successfully. The response body shall contain representations of
+            zero or more VNF instances.
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                description: Map of secret name and secret data
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags:
+        - Internal
+      operationId: getSecretsInNamespace
+      responses:
+        '200':
+          description: >
+            Accepted
+            The request was accepted for processing, but the  processing has not
+            been completed. The response body shall be empty. The HTTP response
+            shall include a "Location" HTTP header that contains the URI of the
+            newly-created "VNF LCM operation occurrence" resource corresponding
+            to the operation.
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                description: Map of secret name and secret data
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/kubernetes/secrets/{secretName}:
+    put:
+      tags:
+        - Internal
+      operationId: patchSecretInNamespace
+      parameters:
+        - name: secretName
+          in: path
+          description: |
+            Name of the secret.
+          schema:
+            type: string
+          required: true
+      requestBody:
+        description: Parameters to patch a Secret
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecretInfo'
+      responses:
+        '202':
+          $ref: '#/components/responses/AcceptedNoBody'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/kubernetes/values/{releaseName}:
+    parameters:
+      - name: releaseName
+        in: path
+        description: |
+          Identifier of the resource.
+        required: true
+        schema:
+          type: string
+          pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+        x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+      - name: namespace
+        in: query
+        description: |
+          The namespace the resource is located in.
+        schema:
+          type: string
+          minLength: 1
+        required: true
+        x-message: "NAMESPACE_EMPTY"
+        x-required-message: 'NAMESPACE_NULL'
+      - name: clusterName
+        in: query
+        description: |
+          The cluster the resource is located in.
+        schema:
+          type: string
+          minLength: 1
+          pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+        required: true
+        x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+      - name: fetchTimeOut
+        in: query
+        description: |
+          The fetchTimeOut is the time needed to fetch the values from kubernetes
+        schema:
+          type: string
+        required: false
+    post:
+      tags:
+        - Internal
+      operationId: getValuesInReleaseWithMultipart
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: >
+            OK
+            Information about values file was queried
+            successfully.
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Map of helm values
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags:
+        - Internal
+      operationId: getValuesInRelease
+      responses:
+        '200':
+          description: >
+            OK
+            Information about values file was queried
+            successfully.
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Map of helm values
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/{releaseName}/pods:
+    parameters:
+      - name: releaseName
+        in: path
+        description: |
+          Identifier of the resource.
+        required: true
+        schema:
+          type: string
+          pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+        x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+      - name: clusterName
+        in: query
+        description: Cluster name where the resource is located.
+        required: true
+        schema:
+          type: string
+          pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+        x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+    post:
+      tags:
+        - Internal Resource Controller
+      description: Retrieves status of the pods by release name and cluster name for legacy packages
+      operationId: getPodStatusLegacy
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: >
+            OK
+            Cluster config is validated successfully. The response body shall contain cluster host url.
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: 'PodStatusResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags:
+        - Internal Resource Controller
+      description: Gets the status of the pods
+      operationId: getPodStatus
+      responses:
+        '200':
+          description: >
+            OK
+            Cluster config is validated successfully. The response body shall contain cluster host url.
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: 'PodStatusResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/pods:
+    post:
+      tags:
+        - Internal Resource Controller
+      description: Retrieves status of the pods by release names and cluster name.
+      operationId: getPodStatusWithMultipart
+      parameters:
+        - name: clusterName
+          in: query
+          description: Cluster name where the resource is located.
+          schema:
+            type: string
+            pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+                json:
+                  type: string
+      responses:
+        '200':
+          description: >
+            OK
+            Cluster config is validated successfully. The response body shall contain cluster host url.
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: 'PodStatusResponseList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/additionalResourceInfo:
+    post:
+      tags:
+        - Internal Resource Controller
+      description: Retrieves status of pods, deployments and statefulsets by release names and cluster name.
+      operationId: getResourceStatus
+      parameters:
+        - name: clusterName
+          in: query
+          description: Cluster name where the resource is located.
+          required: true
+          schema:
+            type: string
+            pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+                json:
+                  type: string
+      responses:
+        '200':
+          description: >
+            OK
+            Cluster config is validated successfully. The response body shall contain cluster host url.
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: 'KubernetesResourceInfoList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/namespaces/{namespace}/validate:
+    post:
+      tags:
+        - Internal Resource Controller
+      operationId: validateNamespace
+      description: Validate namespace if namespace is used for EVNFM deployment
+      parameters:
+        - name: namespace
+          in: path
+          description: The namespace the resource is located in.
+          schema:
+            type: string
+          required: true
+        - name: clusterName
+          in: query
+          description: Cluster name where the resource is located.
+          schema:
+            type: string
+            pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: >
+            OK
+            Cluster config is validated successfully. The response body shall contain cluster host url.
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: 'NamespaceValidationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /internal/helm/versions:
+    get:
+      tags:
+        - Internal Resource Controller
+      operationId: getSupportedHelmVersions
+      description: Gets the available helm versions
+      responses:
+        '200':
+          description: OK
+          headers:
+            Content-Type:
+              description: The MIME type of the body of the response.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: 'HelmVersionsResponse'
+
+components:
+  responses:
+    BasicOk:
+      description: >
+        OK - The request has succeeded.
+    Accepted:
+      description: >
+        Accepted
+        The request was accepted for processing, but the  processing has not
+        been completed. The response body shall be empty. The HTTP response
+        shall include a "Location" HTTP header that contains the URI of the
+        newly-created "VNF LCM operation occurrence" resource corresponding
+        to the operation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResourceResponseSuccess'
+    AcceptedNoBody:
+      description: >
+        Accepted
+        The request was accepted for processing, but the processing has not
+        been completed. The response body shall be empty.
+    BadRequest:
+      description: >
+        Bad Request
+        If the request is malformed or syntactically incorrect (e.g. if the request URI
+        contains incorrect query parameters or the payload body contains a syntactically
+        incorrect data structure), the API producer shall respond with this response code.
+        ---
+        If the response to a GET request which queries a container resource would be so big
+        that the performance of the API producer is adversely affected, and the API
+        producer does not support paging for the affected resource, it shall respond with this
+        response code.
+        ---
+        If there is an application error related to the client's input that
+        cannot be easily mapped to any other HTTP response code ("catch all
+        error"), the API producer shall respond with this response code.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDetails'
+    NotFound:
+      description: >
+        Not Found
+        If the API producer did not find a current representation for the
+        resource addressed by the URI passed in the request, or is not
+        willing to disclose that one exists, it shall respond with this
+        response code.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDetails'
+    InternalServerError:
+      description: >
+        Internal Server Error
+        If there is an application error not related to the client's input
+        that cannot be easily mapped to any other HTTP response code ("catch
+        all error"), the API producer shall respond with this response code.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDetails'
+  schemas:
+    ErrorDetails:
+      type: object
+      properties:
+        errorDetails:
+          type: object
+    ResourceResponseSuccess:
+      properties:
+        releaseName:
+          description: |
+            Identifier of the resource.
+          type: string
+        instanceId:
+          description: |
+            Identifier of the process instance.
+          type: string
+        links:
+          description: >
+            URl to the resource
+          type: object
+    InstantiateInfo:
+      description: |
+        this type represents a instantiate request.
+      type:
+        object
+      required:
+        - lifecycleOperationId
+        - state
+      properties:
+        applicationTimeOut:
+          description: |
+            Maximum time allocated for application instantiation.
+          type: string
+        clusterName:
+          description: |
+            Cluster name where the resource is located.
+          type: string
+          pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+        skipVerification:
+          description: |
+            Flag indicating whether to bypass the Application Verification Checks.
+          type: boolean
+          default: false
+        skipJobVerification:
+          description: |
+            Flag indicating whether to bypass verification of Pods created as part of Job.
+          type: boolean
+          default: false
+        lifecycleOperationId:
+          description: |
+            the lifecycle operation id related to this request.
+          type: string
+          minLength: 1
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+        state:
+          description: |
+            the current lifecycle state of the lifecycle operation id.
+          type: string
+          minLength: 1
+          x-message: "STATE_BLANK_EMPTY"
+          x-required-message: 'STATE_NULL'
+        namespace:
+          description: |
+            The namespace the resource is located in.
+          type: string
+        cleanUpResources:
+          description: |
+            Remove Persistent Volume Claims and Persistent Volumes of an application.
+          type: boolean
+          default: false
+        chartType:
+          description: |
+            The type of the chart.
+          type: string
+          enum:
+            - CRD
+            - CNF
+        chartVersion:
+          description: |
+            The version of the chart to instantiate.
+          type: string
+        chartUrl:
+          description: |
+            The Url to the chart.
+          type: string
+        chartName:
+          description: |
+            Name of the chart to instantiate.
+          type: string
+          minLength: 1
+          x-message: 'CHART_NAME_BLANK_EMPTY'
+        overrideGlobalRegistry:
+          description: |
+            Flag to override the global registry.
+          type: boolean
+        additionalParams:
+          description: >
+            This type represents a list of key-value pairs. The order of
+             the pairs in the list is not significant. In JSON, a set of
+            key- value pairs is represented as an object.
+          type: object
+          additionalProperties:
+            type: string
+        day0Configuration:
+          description: >
+            This object represents a list of key-value pairs that defines
+            a day 0 configuration for instantiating CNF. Auxiliary secret
+            parameters is a part of this object though it may contain any
+            other day 0 configuration data as well. This data is useless for
+            helm commands so it was separated in it's own object.
+          type: object
+          additionalProperties:
+            type: object
+        helmClientVersion:
+          description: |
+            Helm version to use for operation.
+          type: string
+    UpgradeInfo:
+      description: |
+        this type represents an upgrade request.
+      type:
+        object
+      required:
+        - lifecycleOperationId
+        - state
+        - namespace
+      properties:
+        namespace:
+          description: |
+            The namespace the resource is located in.
+          type: string
+          minLength: 1
+          x-message: "NAMESPACE_EMPTY"
+          x-required-message: 'NAMESPACE_NULL'
+        applicationTimeOut:
+          description: |
+            Maximum time allocated for application instantiation.
+          type: string
+        clusterName:
+          description: |
+            Cluster name where the resource is located.
+          type: string
+          pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+        skipVerification:
+          description: |
+            Flag indicating whether to bypass the Application Verification Checks.
+          type: boolean
+          default: false
+        skipJobVerification:
+          description: |
+            Flag indicating whether to bypass verification of Pods created as part of Job.
+          type: boolean
+          default: false
+        lifecycleOperationId:
+          description: |
+            the lifecycle operation id related to this request.
+          type: string
+          minLength: 1
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+        state:
+          description: |
+            the current lifecycle state of the lifecycle operation id.
+          type: string
+          minLength: 1
+          x-message: "STATE_BLANK_EMPTY"
+          x-required-message: 'STATE_NULL'
+        chartType:
+          description: |
+            The type of the chart.
+          type: string
+          enum:
+            - CRD
+            - CNF
+        chartVersion:
+          description: |
+            The version of the chart to instantiate.
+          type: string
+        chartUrl:
+          description: |
+            The Url to the chart.
+          type: string
+        chartName:
+          description: |
+            Name of the chart to instantiate.
+          type: string
+          minLength: 1
+          x-message: 'CHART_NAME_BLANK_EMPTY'
+        overrideGlobalRegistry:
+          description: |
+            Flag to override the global registry.
+          type: boolean
+        additionalParams:
+          description: >
+            This type represents a list of key-value pairs. The order of
+             the pairs in the list is not significant. In JSON, a set of
+            key- value pairs is represented as an object.
+          type: object
+          additionalProperties:
+            type: string
+        helmClientVersion:
+          description: |
+            Helm version to use for operation.
+          type: string
+    ScaleInfo:
+      description: |
+        this type represents a scale request.
+      type: object
+      required:
+        - lifecycleOperationId
+        - state
+        - scaleResources
+        - namespace
+      properties:
+        namespace:
+          description: |
+            The namespace the resource is located in.
+          type: string
+          minLength: 1
+          x-message: "NAMESPACE_EMPTY"
+          x-required-message: 'NAMESPACE_NULL'
+        applicationTimeOut:
+          description: |
+            Maximum time allocated for application instantiation.
+          type: string
+        clusterName:
+          description: |
+            Cluster name where the resource is located.
+          type: string
+          pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+        lifecycleOperationId:
+          description: |
+            the lifecycle operation id related to this request.
+          type: string
+          minLength: 1
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+        state:
+          description: |
+            the current lifecycle state of the lifecycle operation id.
+          type: string
+          minLength: 1
+          x-message: "STATE_BLANK_EMPTY"
+          x-required-message: 'STATE_NULL'
+        chartVersion:
+          description: |
+            The version of the chart to instantiate.
+          type: string
+        chartUrl:
+          description: |
+            The Url to the chart.
+          type: string
+        chartName:
+          description: |
+            Name of the chart to instantiate.
+          type: string
+          minLength: 1
+          x-message: 'CHART_NAME_BLANK_EMPTY'
+        overrideGlobalRegistry:
+          description: |
+            Flag to override the global registry.
+          type: boolean
+        additionalParams:
+          description: >
+            This type represents a list of key-value pairs. The order of
+             the pairs in the list is not significant. In JSON, a set of
+            key- value pairs is represented as an object.
+          type: object
+          additionalProperties:
+            type: string
+        scaleResources:
+          description: >
+            This type represents a map of key-value pairs. The order of
+             the pairs in the map is not significant. In JSON, a set of
+            key- value pairs is represented as an object.
+          type: object
+          minProperties: 1
+          x-required-message: 'SCALE_RESOURCES_CANT_BE_NULL'
+          x-message: 'SCALE_RESOURCES_CANT_BE_EMPTY'
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: integer
+        helmClientVersion:
+          description: |
+            Helm version to use for operation.
+          type: string
+    RollbackInfo:
+      description: |
+        this type represents a rollback request.
+      type: object
+      required:
+        - lifecycleOperationId
+        - state
+        - revisionNumber
+        - namespace
+      properties:
+        namespace:
+          description: |
+            The namespace the resource is located in.
+          type: string
+          minLength: 1
+          x-message: "NAMESPACE_EMPTY"
+          x-required-message: 'NAMESPACE_NULL'
+        applicationTimeOut:
+          description: |
+            Maximum time allocated for application instantiation.
+          type: string
+        clusterName:
+          description: |
+            Cluster name where the resource is located.
+          type: string
+          pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+        skipVerification:
+          description: |
+            Flag indicating whether to bypass the Application Verification Checks.
+          type: boolean
+          default: false
+        skipJobVerification:
+          description: |
+            Flag indicating whether to bypass verification of Pods created as part of Job.
+          type: boolean
+          default: false
+        lifecycleOperationId:
+          description: |
+            the lifecycle operation id related to this request.
+          type: string
+          minLength: 1
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+        state:
+          description: |
+            the current lifecycle state of the lifecycle operation id.
+          type: string
+          minLength: 1
+          x-message: "STATE_BLANK_EMPTY"
+          x-required-message: 'STATE_NULL'
+        revisionNumber:
+          description: |
+            The revision to rollback too.
+          type: string
+          minLength: 1
+          pattern: '^(0|[1-9][0-9]*)$'
+          x-pattern-message: 'REVISION_NUMBER_NUMERIC'
+          x-required-message: 'REVISION_NUMBER_REQUIRED'
+          x-message: 'REVISION_NUMBER_REQUIRED'
+        helmClientVersion:
+          description: |
+            Helm version to use for operation.
+          type: string
+    InternalScaleInfo:
+      type: object
+      required:
+        - releaseName
+        - namespace
+        - clusterName
+        - lifecycleOperationId
+        - applicationTimeout
+      properties:
+        releaseName:
+          description: |
+            The release name of the resource
+          type: string
+          pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          x-required-message: 'RELEASE_NAME_NULL'
+        namespace:
+          description: |
+            The namespace that the resource is present in
+          type: string
+          minLength: 1
+          x-message: "NAMESPACE_EMPTY"
+          x-required-message: 'NAMESPACE_NULL'
+        clusterName:
+          description: >
+            The cluster name of the resource
+          type: string
+          minLength: 1
+          x-message: "CLUSTER_NAME_EMPTY"
+          x-required-message: 'CLUSTER_NAME_NULL'
+        lifecycleOperationId:
+          description: |
+            the lifecycle operation id related to this request.
+          type: string
+          minLength: 1
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+        applicationTimeOut:
+          description: |
+            Maximum time allocated for application instantiation.
+          type: string
+          minLength: 1
+    SecretInfo:
+      type: object
+      required:
+        - namespace
+        - key
+        - value
+      properties:
+        namespace:
+          description: |
+            The namespace the resource is located in.
+          type: string
+          minLength: 1
+          x-message: "NAMESPACE_EMPTY"
+          x-required-message: 'NAMESPACE_NULL'
+        clusterName:
+          description: |
+            Cluster name where the resource is located.
+          type: string
+          pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+        key:
+          description: |
+            The Secret key to be patched.
+          type: string
+          x-message: "SECRET_KEY_EMPTY"
+          x-required-message: 'SECRET_KEY_NULL'
+        value:
+          description: |
+            The Secret value to be updated.
+          type: string
+          x-required-message: 'SECRET_VALUE_NULL'
+    Namespace:
+      type: object
+      title: namespace
+      required:
+        - name
+        - uid
+      properties:
+        name:
+          type: string
+          description: Namespace name
+        uid:
+          type: string
+          description: Unique id of namespace
+    ClusterServerDetailsResponse:
+      properties:
+        hostUrl:
+          description: |
+            Cluster config host url.
+          type: string
+        apiKey:
+          description: |
+            Api key.
+          type: string
+        version:
+          description: |
+            Cluster version
+          type: string
+        namespaces:
+          description: List of namespaces on the cluster
+          type: array
+          items:
+            $ref: '#/components/schemas/Namespace'

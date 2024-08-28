@@ -1,0 +1,1 @@
+-DhelmDesignRule.setValue.eric-am-common-wfs="ingress.host=host;service.account=account;helmExecutor.job.template=true"

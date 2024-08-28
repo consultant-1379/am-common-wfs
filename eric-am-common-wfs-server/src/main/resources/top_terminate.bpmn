@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_03mi9ft" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="2.2.4">
+  <bpmn:process id="TerminateApplication__top" name="Terminate Application" camunda:asyncAfter="true" isExecutable="true"
+  camunda:historyTimeToLive="0">
+    <bpmn:startEvent id="StartEvent_1" name="START">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="releaseName" label="releaseName" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>SequenceFlow_0onvbrq</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0onvbrq" sourceRef="StartEvent_1" targetRef="Task_Terminate_Validate" />
+    <bpmn:serviceTask id="Task_Terminate_Validate" name="Validate Input" camunda:delegateExpression="${terminationValidationTask}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0onvbrq</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_14niayk</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryEvent_Terminate_ValidateInput" attachedToRef="Task_Terminate_Validate">
+      <bpmn:outgoing>Flow_0maes69</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:callActivity id="Activity_Terminate_Application" name="Terminate Application" calledElement="subwf_helm_command">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="type">
+            <camunda:script scriptFormat="groovy">execution.setVariable("commandType", "uninstall")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:outputParameter name="command">
+            <camunda:script scriptFormat="groovy">execution.getVariable("command")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="commandOutput">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandOutput")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1uy2ie3</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0q156nc</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_1yjnbpy" attachedToRef="Activity_Terminate_Application">
+      <bpmn:outgoing>Flow_0djrwza</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:callActivity id="Activity_Verify_Termination" name="Verify Termination" camunda:asyncAfter="true"
+    calledElement="subwf_verify_application_terminated">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0q156nc</bpmn:incoming>
+      <bpmn:incoming>Flow_0ol8fra</bpmn:incoming>
+      <bpmn:outgoing>Flow_1czye0b</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_11is0hn" attachedToRef="Activity_Verify_Termination">
+      <bpmn:outgoing>Flow_0yy7r7f</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:scriptTask id="Task_SetWorkflowStatus" name="Set Workflow Status" scriptFormat="groovy">
+      <bpmn:incoming>Flow_1rt89bq</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_00a7r36</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.TerminationSuccess");
+String verifyOutput = (String) execution.getVariable("verifyAppResult");
+execution.setVariable("message",verifyOutput);
+logger.info(execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:endEvent id="EndEvent_TerminateSuccessful" name="END">
+      <bpmn:incoming>SequenceFlow_02a9rmp</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:scriptTask id="Task_LogTerminationFailure" name="Log Termination Failure" scriptFormat="groovy">
+      <bpmn:incoming>Flow_1mydkjo</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1fqbd1h</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.TerminationFailed");
+String errorOutput = (String) execution.getVariable("errorMessage");
+if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+    execution.setVariable("message",errorOutput);
+} else {
+    execution.setVariable("message","unknown exception occured");
+}
+logger.error("Failed to terminate application due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:endEvent id="EndEvent_Terminate_Error" name="ERROR END">
+      <bpmn:incoming>SequenceFlow_0skewj1</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_1uak217</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_1nnt68t" />
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0q156nc" sourceRef="Activity_Terminate_Application" targetRef="Activity_Verify_Termination" />
+    <bpmn:sequenceFlow id="SequenceFlow_00a7r36" sourceRef="Task_SetWorkflowStatus" targetRef="Activity_Publish_Lifecycle_Message_End" />
+    <bpmn:sequenceFlow id="SequenceFlow_02a9rmp" sourceRef="Activity_Publish_Lifecycle_Message_End" targetRef="EndEvent_TerminateSuccessful" />
+    <bpmn:sequenceFlow id="SequenceFlow_1fqbd1h" sourceRef="Task_LogTerminationFailure" targetRef="Activity_Publish_Lifecycle_Message_Error_End" />
+    <bpmn:sequenceFlow id="SequenceFlow_0skewj1" sourceRef="Activity_Publish_Lifecycle_Message_Error_End" targetRef="EndEvent_Terminate_Error" />
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_Error_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1fqbd1h</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0skewj1</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_00a7r36</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_02a9rmp</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_publish_lifecycle_message" attachedToRef="Activity_Publish_Lifecycle_Message_End">
+      <bpmn:outgoing>Flow_0e1ynxh</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="BoundaryEvent_publish_lifecycle_message_error" attachedToRef="Activity_Publish_Lifecycle_Message_Error_End">
+      <bpmn:outgoing>SequenceFlow_1uak217</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1uak217" sourceRef="BoundaryEvent_publish_lifecycle_message_error" targetRef="EndEvent_Terminate_Error" />
+    <bpmn:serviceTask id="Task_Terminate_Calculate_Delay_timeout" name="Calculate Delay and set app timeout" camunda:delegateExpression="${calculateCamundaDelay}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="command">
+            <camunda:script scriptFormat="groovy">execution.getVariable("command")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="commandOutput">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandOutput")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_14niayk</bpmn:incoming>
+      <bpmn:outgoing>Flow_1atevip</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_14niayk" sourceRef="Task_Terminate_Validate" targetRef="Task_Terminate_Calculate_Delay_timeout" />
+    <bpmn:callActivity id="Activity_Check_Label_Namespace" name="Check For Release Label And Namespace" camunda:asyncBefore="true"
+    camunda:asyncAfter="true" calledElement="subwf_kubectl_check_label_namespace">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1atevip</bpmn:incoming>
+      <bpmn:outgoing>Flow_0mksavt</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:scriptTask id="Script_Log_Validation_Failures" name="Log Termination Failure" scriptFormat="groovy">
+      <bpmn:incoming>Flow_19n9yfd</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1bb22t8</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.TerminationFailed");
+String errorOutput = (String) execution.getVariable("errorMessage");
+if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+    execution.setVariable("message",errorOutput);
+} else {
+    execution.setVariable("message","unknown exception occured");
+}
+logger.error("Failed to terminate application due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1bb22t8" sourceRef="Script_Log_Validation_Failures" targetRef="Terminate_Validation_Error_Event" />
+    <bpmn:endEvent id="Terminate_Validation_Error_Event" name="VALIDATION ERROR END">
+      <bpmn:incoming>SequenceFlow_1bb22t8</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_0zgkoyk" />
+    </bpmn:endEvent>
+    <bpmn:callActivity id="Activity_Check_if_helm_release_present" name="Check if helm release present?" camunda:asyncAfter="true"
+    calledElement="subwf_helm_history">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="lastHistory">true</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0mksavt</bpmn:incoming>
+      <bpmn:outgoing>Flow_1uy2ie3</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="Event_1tyjfmz" name="Helm history failure" attachedToRef="Activity_Check_if_helm_release_present">
+      <bpmn:outgoing>Flow_0ol8fra</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0ncmjb5" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_0ol8fra" name="No" sourceRef="Event_1tyjfmz" targetRef="Activity_Verify_Termination" />
+    <bpmn:sequenceFlow id="Flow_1atevip" sourceRef="Task_Terminate_Calculate_Delay_timeout" targetRef="Activity_Check_Label_Namespace" />
+    <bpmn:sequenceFlow id="Flow_0mksavt" sourceRef="Activity_Check_Label_Namespace" targetRef="Activity_Check_if_helm_release_present" />
+    <bpmn:sequenceFlow id="Flow_1uy2ie3" sourceRef="Activity_Check_if_helm_release_present" targetRef="Activity_Terminate_Application" />
+    <bpmn:serviceTask id="Activity_RemoveAuxiliarySecretOnTermination" name="Remove Auxiliary Secret" camunda:delegateExpression="${deleteAuxiliarySecret}">
+      <bpmn:incoming>Flow_1czye0b</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0kanqu4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryEvent_RemoveAuxiliarySecretOnTermination" attachedToRef="Activity_RemoveAuxiliarySecretOnTermination">
+      <bpmn:outgoing>Flow_0x161ss</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_15l8kk7" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_1czye0b" sourceRef="Activity_Verify_Termination" targetRef="Activity_RemoveAuxiliarySecretOnTermination" />
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnValidationFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_0maes69</bpmn:incoming>
+      <bpmn:outgoing>Flow_19n9yfd</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0maes69" sourceRef="BoundaryEvent_Terminate_ValidateInput" targetRef="Task_RemoveTemporaryFilesOnValidationFailure" />
+    <bpmn:sequenceFlow id="Flow_19n9yfd" sourceRef="Task_RemoveTemporaryFilesOnValidationFailure" targetRef="Script_Log_Validation_Failures" />
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnSuccess" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>SequenceFlow_0g18ab3</bpmn:incoming>
+      <bpmn:outgoing>Flow_1rt89bq</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1rt89bq" sourceRef="Task_RemoveTemporaryFilesOnSuccess" targetRef="Task_SetWorkflowStatus" />
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_0djrwza</bpmn:incoming>
+      <bpmn:incoming>Flow_0yy7r7f</bpmn:incoming>
+      <bpmn:incoming>Flow_0x161ss</bpmn:incoming>
+      <bpmn:incoming>Flow_0e1ynxh</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_153v4y3</bpmn:incoming>
+      <bpmn:outgoing>Flow_1mydkjo</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0djrwza" sourceRef="BoundaryEvent_1yjnbpy" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_0yy7r7f" sourceRef="BoundaryEvent_11is0hn" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_0x161ss" sourceRef="BoundaryEvent_RemoveAuxiliarySecretOnTermination" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_0e1ynxh" sourceRef="BoundaryEvent_publish_lifecycle_message" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_1mydkjo" sourceRef="Task_RemoveTemporaryFilesOnFailure" targetRef="Task_LogTerminationFailure" />
+    <bpmn:sequenceFlow id="SequenceFlow_0kanqu4" sourceRef="Activity_RemoveAuxiliarySecretOnTermination" targetRef="Task_RemoveRegistrySecret" />
+    <bpmn:sequenceFlow id="SequenceFlow_0g18ab3" sourceRef="Task_RemoveRegistrySecret" targetRef="Task_RemoveTemporaryFilesOnSuccess" />
+    <bpmn:serviceTask id="Task_RemoveRegistrySecret" name="Remove registry secret" camunda:delegateExpression="${deleteSecret}">
+      <bpmn:incoming>SequenceFlow_0kanqu4</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0g18ab3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryEvent_1r173ll" attachedToRef="Task_RemoveRegistrySecret">
+      <bpmn:outgoing>SequenceFlow_153v4y3</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_153v4y3" sourceRef="BoundaryEvent_1r173ll" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+  </bpmn:process>
+  <bpmn:error id="Error_18bedhy" name="Error_3nf5nco" />
+  <bpmn:error id="Error_1nnt68t" name="TerminationFailed" errorCode="error.common.termination.failed" />
+  <bpmn:error id="Error_0zgkoyk" name="Validation_Failed" errorCode="error.terminate.validation.error" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="TerminateApplication__top">
+      <bpmndi:BPMNEdge id="Flow_1czye0b_di" bpmnElement="Flow_1czye0b">
+        <di:waypoint x="1109" y="310" />
+        <di:waypoint x="1160" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1uy2ie3_di" bpmnElement="Flow_1uy2ie3">
+        <di:waypoint x="672" y="140" />
+        <di:waypoint x="810" y="140" />
+        <di:waypoint x="810" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0mksavt_di" bpmnElement="Flow_0mksavt">
+        <di:waypoint x="622" y="270" />
+        <di:waypoint x="622" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1atevip_di" bpmnElement="Flow_1atevip">
+        <di:waypoint x="497" y="310" />
+        <di:waypoint x="572" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ol8fra_di" bpmnElement="Flow_0ol8fra">
+        <di:waypoint x="620" y="82" />
+        <di:waypoint x="620" y="62" />
+        <di:waypoint x="1060" y="62" />
+        <di:waypoint x="1060" y="270" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="833" y="44" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1bb22t8_di" bpmnElement="SequenceFlow_1bb22t8">
+        <di:waypoint x="290" y="690" />
+        <di:waypoint x="290" y="751" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_14niayk_di" bpmnElement="SequenceFlow_14niayk">
+        <di:waypoint x="351" y="310" />
+        <di:waypoint x="397" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1uak217_di" bpmnElement="SequenceFlow_1uak217">
+        <di:waypoint x="754" y="878" />
+        <di:waypoint x="754" y="930" />
+        <di:waypoint x="792" y="930" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0skewj1_di" bpmnElement="SequenceFlow_0skewj1">
+        <di:waypoint x="804" y="860" />
+        <di:waypoint x="804" y="886" />
+        <di:waypoint x="810" y="886" />
+        <di:waypoint x="810" y="912" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1fqbd1h_di" bpmnElement="SequenceFlow_1fqbd1h">
+        <di:waypoint x="804" y="718" />
+        <di:waypoint x="804" y="780" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_02a9rmp_di" bpmnElement="SequenceFlow_02a9rmp">
+        <di:waypoint x="1959" y="310" />
+        <di:waypoint x="2035" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_00a7r36_di" bpmnElement="SequenceFlow_00a7r36">
+        <di:waypoint x="1783" y="310" />
+        <di:waypoint x="1859" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0q156nc_di" bpmnElement="SequenceFlow_0q156nc">
+        <di:waypoint x="854" y="310" />
+        <di:waypoint x="1009" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0onvbrq_di" bpmnElement="SequenceFlow_0onvbrq">
+        <di:waypoint x="194" y="310" />
+        <di:waypoint x="251" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0maes69_di" bpmnElement="Flow_0maes69">
+        <di:waypoint x="290" y="368" />
+        <di:waypoint x="290" y="470" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19n9yfd_di" bpmnElement="Flow_19n9yfd">
+        <di:waypoint x="290" y="550" />
+        <di:waypoint x="290" y="610" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1rt89bq_di" bpmnElement="Flow_1rt89bq">
+        <di:waypoint x="1594" y="310" />
+        <di:waypoint x="1683" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0djrwza_di" bpmnElement="Flow_0djrwza">
+        <di:waypoint x="804" y="368" />
+        <di:waypoint x="804" y="520" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0yy7r7f_di" bpmnElement="Flow_0yy7r7f">
+        <di:waypoint x="1061" y="368" />
+        <di:waypoint x="1061" y="560" />
+        <di:waypoint x="854" y="560" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0x161ss_di" bpmnElement="Flow_0x161ss">
+        <di:waypoint x="1210" y="368" />
+        <di:waypoint x="1210" y="560" />
+        <di:waypoint x="854" y="560" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0e1ynxh_di" bpmnElement="Flow_0e1ynxh">
+        <di:waypoint x="1877" y="368" />
+        <di:waypoint x="1877" y="560" />
+        <di:waypoint x="854" y="560" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mydkjo_di" bpmnElement="Flow_1mydkjo">
+        <di:waypoint x="804" y="600" />
+        <di:waypoint x="804" y="638" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="158" y="292" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="158" y="335" width="36" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1t5tavx_di" bpmnElement="Task_Terminate_Validate">
+        <dc:Bounds x="251" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0g6our0_di" bpmnElement="Activity_Terminate_Application">
+        <dc:Bounds x="754" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0flixuw_di" bpmnElement="Activity_Verify_Termination">
+        <dc:Bounds x="1009" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0p4vj98_di" bpmnElement="Task_SetWorkflowStatus">
+        <dc:Bounds x="1683" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0k0j8kj_di" bpmnElement="EndEvent_TerminateSuccessful">
+        <dc:Bounds x="2035" y="292" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2041" y="335" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_09mmvir_di" bpmnElement="Activity_Publish_Lifecycle_Message_End">
+        <dc:Bounds x="1859" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_05zrgsl_di" bpmnElement="Task_Terminate_Calculate_Delay_timeout">
+        <dc:Bounds x="397" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1wnzn79_di" bpmnElement="Activity_Check_Label_Namespace">
+        <dc:Bounds x="572" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_003uwts_di" bpmnElement="Activity_Check_if_helm_release_present">
+        <dc:Bounds x="572" y="100" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_14jvasl_di" bpmnElement="Activity_RemoveAuxiliarySecretOnTermination">
+        <dc:Bounds x="1160" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0w6lkmb_di" bpmnElement="Terminate_Validation_Error_Event">
+        <dc:Bounds x="272" y="751" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="257" y="794" width="67" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0cy6hwm_di" bpmnElement="Script_Log_Validation_Failures">
+        <dc:Bounds x="240" y="610" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0txbq2g_di" bpmnElement="Task_RemoveTemporaryFilesOnValidationFailure">
+        <dc:Bounds x="240" y="470" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_11yvelj_di" bpmnElement="Task_RemoveTemporaryFilesOnSuccess">
+        <dc:Bounds x="1494" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_16hisit_di" bpmnElement="EndEvent_Terminate_Error">
+        <dc:Bounds x="792" y="912" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="777" y="955" width="67" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_19uc7uw_di" bpmnElement="Task_RemoveTemporaryFilesOnFailure">
+        <dc:Bounds x="754" y="520" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0565t8l_di" bpmnElement="Task_LogTerminationFailure">
+        <dc:Bounds x="754" y="638" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_14se9yr_di" bpmnElement="Activity_Publish_Lifecycle_Message_Error_End">
+        <dc:Bounds x="754" y="780" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1g11hk7_di" bpmnElement="BoundaryEvent_RemoveAuxiliarySecretOnTermination">
+        <dc:Bounds x="1192" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0wxgmcg_di" bpmnElement="Event_1tyjfmz">
+        <dc:Bounds x="602" y="82" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="549" y="66" width="62" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_00w9yba_di" bpmnElement="BoundaryEvent_publish_lifecycle_message">
+        <dc:Bounds x="1859" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1wb4cz2_di" bpmnElement="BoundaryEvent_11is0hn">
+        <dc:Bounds x="1043" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0j7tdhz_di" bpmnElement="BoundaryEvent_1yjnbpy">
+        <dc:Bounds x="786" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_15g289u_di" bpmnElement="BoundaryEvent_Terminate_ValidateInput">
+        <dc:Bounds x="272" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1x4ditt_di" bpmnElement="BoundaryEvent_publish_lifecycle_message_error">
+        <dc:Bounds x="736" y="842" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0kanqu4_di" bpmnElement="SequenceFlow_0kanqu4">
+        <di:waypoint x="1260" y="310" />
+        <di:waypoint x="1339" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0g18ab3_di" bpmnElement="SequenceFlow_0g18ab3">
+        <di:waypoint x="1439" y="310" />
+        <di:waypoint x="1494" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_1ui7vrs_di" bpmnElement="Task_RemoveRegistrySecret">
+        <dc:Bounds x="1339" y="270" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_17gleyl_di" bpmnElement="BoundaryEvent_1r173ll">
+        <dc:Bounds x="1374" y="332" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_153v4y3_di" bpmnElement="SequenceFlow_153v4y3">
+        <di:waypoint x="1392" y="368" />
+        <di:waypoint x="1392" y="560" />
+        <di:waypoint x="854" y="560" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

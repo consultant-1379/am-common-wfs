@@ -1,0 +1,6 @@
+{
+  "vnfc1.replicaCount" :  "1",
+  "vnfc1.maxReplicas" :  "4",
+  "vnfc1.minReplicas" : "1",
+  "vnfc1.autoscaling.enabled" : true
+}

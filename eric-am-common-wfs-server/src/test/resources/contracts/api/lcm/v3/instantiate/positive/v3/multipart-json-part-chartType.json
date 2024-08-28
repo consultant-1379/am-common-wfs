@@ -1,0 +1,7 @@
+{
+  "chartName": "adp-am/my-chart",
+  "lifecycleOperationId": "my-id",
+  "state": "starting",
+  "chartType":  "CRD",
+  "chartVersion": "1.2.3"
+}

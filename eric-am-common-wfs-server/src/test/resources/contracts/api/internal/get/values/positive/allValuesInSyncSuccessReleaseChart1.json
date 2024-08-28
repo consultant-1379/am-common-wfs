@@ -1,0 +1,6 @@
+{
+  "CL_scaled_vm.autoscaling.minReplicas": 3,
+  "CL_scaled_vm.autoscaling.maxReplicas": 7,
+  "CL_scaled_vm.autoscaling.engine.enabled": true,
+  "CL_scaled_vm.replicaCount": 7
+}

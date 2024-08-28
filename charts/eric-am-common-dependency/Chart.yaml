@@ -1,0 +1,34 @@
+#
+# COPYRIGHT Ericsson 2024
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+apiVersion: v1
+description: A Helm chart for the ADP Application Manager Common for CI flow dependent charts
+name: eric-am-common-dependency
+version: 0.0.1
+dependencies:
+  - condition: eric-lcm-helm-chart-registry.enabled
+    name: eric-lcm-helm-chart-registry
+    repository: https://arm.sero.gic.ericsson.se/artifactory/proj-adp-gs-all-helm/
+    version: 3.5.0+16
+  - name: eric-eo-evnfm-crypto
+    repository: https://arm.seli.gic.ericsson.se/artifactory/proj-eo-evnfm-helm
+    version: 0.49.0+1
+  - name: eric-cloud-native-kvdb-rd-operand
+    repository: file://redis-operand-chart/eric-cloud-native-kvdb-rd-operand
+    version: 3.6.0+56
+  - name: eric-data-key-value-database-rd
+    repository: https://arm.sero.gic.ericsson.se/artifactory/proj-adp-gs-all-helm
+    version: 3.6.0+56

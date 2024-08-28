@@ -1,0 +1,1250 @@
+{
+  "apiVersion": "v1",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "annotations": {
+          "cni.projectcalico.org/containerID": "8621b6371c79d9d6d64fd2793c207b206ec077439c9ad4c8112feb539fec35d0",
+          "cni.projectcalico.org/podIP": "",
+          "cni.projectcalico.org/podIPs": "",
+          "ericsson.com/product-name": "CM Mediator HELM",
+          "ericsson.com/product-number": "CXC 201 1506",
+          "ericsson.com/product-revision": "8.6.0"
+        },
+        "creationTimestamp": "2023-05-15T06:28:57Z",
+        "generateName": "eric-cm-mediator-key-init-",
+        "labels": {
+          "app.kubernetes.io/instance": "eric-cloud-native-base",
+          "app.kubernetes.io/managed-by": "Helm",
+          "app.kubernetes.io/name": "eric-cm-mediator",
+          "app.kubernetes.io/version": "8.6.0_16",
+          "controller-uid": "f7f1f3cd-4aa5-470f-ab90-84eaf3724e7c",
+          "eric-sec-key-management-access": "true",
+          "helm.sh/chart": "eric-cm-mediator-8.6.0_16",
+          "job-name": "eric-cm-mediator-key-init"
+        },
+        "name": "eric-cm-mediator-key-init-jvqvz",
+        "namespace": "zkulrus-ns",
+        "ownerReferences": [
+          {
+            "apiVersion": "batch/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "Job",
+            "name": "eric-cm-mediator-key-init",
+            "uid": "f7f1f3cd-4aa5-470f-ab90-84eaf3724e7c"
+          }
+        ],
+        "resourceVersion": "59650673",
+        "uid": "943465eb-1f18-4e8b-94e0-783bba706581"
+      },
+      "spec": {
+        "containers": [
+          {
+            "env": [
+              {
+                "name": "CM_LOG_FORMAT",
+                "value": "adpjson"
+              },
+              {
+                "name": "CM_LOG_MAX_MSG_SIZE",
+                "value": "32768"
+              },
+              {
+                "name": "CM_LOG_SERVICE_TAG",
+                "value": "eric-cm-mediator"
+              },
+              {
+                "name": "TZ",
+                "value": "UTC"
+              },
+              {
+                "name": "NODE_NAME",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "spec.nodeName"
+                  }
+                }
+              },
+              {
+                "name": "NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "CONTAINER_NAME",
+                "value": "eric-cm-key-init"
+              },
+              {
+                "name": "CM_LOG_OUTPUT",
+                "value": "console"
+              },
+              {
+                "name": "KMS_SERVER",
+                "value": "eric-sec-key-management:8200"
+              },
+              {
+                "name": "CM_KEY_NAME",
+                "value": "eric-cm-key-v1"
+              },
+              {
+                "name": "CM_KEY_ALGORITHM",
+                "value": "aes256-gcm96"
+              }
+            ],
+            "image": "armdocker.rnd.ericsson.se/proj-common-assets-cd-released/control/cm/eric-cm-mediator/eric-cm-key-init:8.6.0-16",
+            "imagePullPolicy": "Always",
+            "name": "eric-cm-key-init",
+            "resources": {
+              "limits": {
+                "cpu": "200m",
+                "ephemeral-storage": "10Mi",
+                "memory": "64Mi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "ephemeral-storage": "10Mi",
+                "memory": "24Mi"
+              }
+            },
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "capabilities": {
+                "drop": [
+                  "all"
+                ]
+              },
+              "privileged": false,
+              "readOnlyRootFilesystem": true,
+              "runAsNonRoot": true
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/tmp",
+                "name": "tmp-volume"
+              },
+              {
+                "mountPath": "/etc/sip-tls-ca/",
+                "name": "tls-trusted-ca-cert-volumemount",
+                "readOnly": true
+              },
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-kzxk2",
+                "readOnly": true
+              }
+            ]
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "imagePullSecrets": [
+          {
+            "name": "k8s-registry-secret"
+          }
+        ],
+        "initContainers": [
+          {
+            "env": [
+              {
+                "name": "CM_LOG_FORMAT",
+                "value": "adpjson"
+              },
+              {
+                "name": "CM_LOG_MAX_MSG_SIZE",
+                "value": "32768"
+              },
+              {
+                "name": "CM_LOG_SERVICE_TAG",
+                "value": "eric-cm-mediator"
+              },
+              {
+                "name": "TZ",
+                "value": "UTC"
+              },
+              {
+                "name": "NODE_NAME",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "spec.nodeName"
+                  }
+                }
+              },
+              {
+                "name": "NAMESPACE",
+                "valueFrom": {
+                  "fieldRef": {
+                    "apiVersion": "v1",
+                    "fieldPath": "metadata.namespace"
+                  }
+                }
+              },
+              {
+                "name": "CONTAINER_NAME",
+                "value": "eric-cm-mediator-init-container"
+              },
+              {
+                "name": "CM_LOG_OUTPUT",
+                "value": "console"
+              },
+              {
+                "name": "ENDPOINT",
+                "value": "eric-sec-key-management:8200"
+              }
+            ],
+            "image": "armdocker.rnd.ericsson.se/proj-common-assets-cd-released/control/cm/eric-cm-mediator/eric-cm-mediator-init-container:8.6.0-16",
+            "imagePullPolicy": "Always",
+            "name": "eric-cm-mediator-init-container",
+            "resources": {
+              "limits": {
+                "cpu": "200m",
+                "ephemeral-storage": "10Mi",
+                "memory": "48Mi"
+              },
+              "requests": {
+                "cpu": "50m",
+                "ephemeral-storage": "10Mi",
+                "memory": "24Mi"
+              }
+            },
+            "securityContext": {
+              "allowPrivilegeEscalation": false,
+              "capabilities": {
+                "drop": [
+                  "all"
+                ]
+              },
+              "privileged": false,
+              "readOnlyRootFilesystem": true,
+              "runAsNonRoot": true
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/tmp",
+                "name": "tmp-volume"
+              },
+              {
+                "mountPath": "/etc/sip-tls-ca/",
+                "name": "tls-trusted-ca-cert-volumemount",
+                "readOnly": true
+              },
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-kzxk2",
+                "readOnly": true
+              }
+            ]
+          }
+        ],
+        "nodeName": "node-10-156-133-38",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "OnFailure",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "serviceAccount": "eric-sec-key-management-admin",
+        "serviceAccountName": "eric-sec-key-management-admin",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "tolerationSeconds": 300
+          },
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "tolerationSeconds": 300
+          }
+        ],
+        "volumes": [
+          {
+            "emptyDir": {
+              "medium": "Memory"
+            },
+            "name": "tmp-volume"
+          },
+          {
+            "name": "tls-trusted-ca-cert-volumemount",
+            "secret": {
+              "defaultMode": 420,
+              "optional": true,
+              "secretName": "eric-sec-sip-tls-trusted-root-cert"
+            }
+          },
+          {
+            "name": "kube-api-access-kzxk2",
+            "projected": {
+              "defaultMode": 420,
+              "sources": [
+                {
+                  "serviceAccountToken": {
+                    "expirationSeconds": 3607,
+                    "path": "token"
+                  }
+                },
+                {
+                  "configMap": {
+                    "items": [
+                      {
+                        "key": "ca.crt",
+                        "path": "ca.crt"
+                      }
+                    ],
+                    "name": "kube-root-ca.crt"
+                  }
+                },
+                {
+                  "downwardAPI": {
+                    "items": [
+                      {
+                        "fieldRef": {
+                          "apiVersion": "v1",
+                          "fieldPath": "metadata.namespace"
+                        },
+                        "path": "namespace"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-15T06:31:11Z",
+            "reason": "PodCompleted",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-15T06:32:26Z",
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-15T06:32:26Z",
+            "reason": "PodCompleted",
+            "status": "False",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-15T06:28:57Z",
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "containerID": "containerd://9db19041a89023d0ce6015473a611ad73a44dab260731715894f315d2470c622",
+            "image": "armdocker.rnd.ericsson.se/proj-common-assets-cd-released/control/cm/eric-cm-mediator/eric-cm-key-init:8.6.0-16",
+            "imageID": "armdocker.rnd.ericsson.se/proj-common-assets-cd-released/control/cm/eric-cm-mediator/eric-cm-key-init@sha256:a1aa31623447629014b8e756875685b2c4ffb0772780b89d64c73c609e94a82e",
+            "lastState": {},
+            "name": "eric-cm-key-init",
+            "ready": false,
+            "restartCount": 0,
+            "started": false,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://9db19041a89023d0ce6015473a611ad73a44dab260731715894f315d2470c622",
+                "exitCode": 0,
+                "finishedAt": "2023-05-15T06:32:26Z",
+                "reason": "Completed",
+                "startedAt": "2023-05-15T06:31:11Z"
+              }
+            }
+          }
+        ],
+        "hostIP": "10.156.133.38",
+        "initContainerStatuses": [
+          {
+            "containerID": "containerd://fae12b4da3bef817a274daf2f529852a0378555ae161f63e3c5292e7f71e03c8",
+            "image": "armdocker.rnd.ericsson.se/proj-common-assets-cd-released/control/cm/eric-cm-mediator/eric-cm-mediator-init-container:8.6.0-16",
+            "imageID": "armdocker.rnd.ericsson.se/proj-common-assets-cd-released/control/cm/eric-cm-mediator/eric-cm-mediator-init-container@sha256:5bcab28a4cc6784ab218fd4664c0485f0a28e11a7eb6de8c94d0f082904dff5d",
+            "lastState": {},
+            "name": "eric-cm-mediator-init-container",
+            "ready": true,
+            "restartCount": 0,
+            "state": {
+              "terminated": {
+                "containerID": "containerd://fae12b4da3bef817a274daf2f529852a0378555ae161f63e3c5292e7f71e03c8",
+                "exitCode": 0,
+                "finishedAt": "2023-05-15T06:31:10Z",
+                "reason": "Completed",
+                "startedAt": "2023-05-15T06:29:00Z"
+              }
+            }
+          }
+        ],
+        "phase": "Succeeded",
+        "podIP": "192.168.196.155",
+        "podIPs": [
+          {
+            "ip": "192.168.196.155"
+          },
+          {
+            "ip": "fc00:1000::c48d"
+          }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2023-05-15T06:28:57Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "annotations": {
+          "cni.projectcalico.org/containerID": "64ab4e1c5ecba03352ab284a90a6e069d3c0c0b634fd2ae8d828c37c4b22fbd9",
+          "cni.projectcalico.org/podIP": "192.168.122.165/32",
+          "cni.projectcalico.org/podIPs": "192.168.122.165/32,fc00:1000::7aaa/128",
+          "ericsson.com/nf-name": "spider-app-multi-a-v2"
+        },
+        "creationTimestamp": "2023-05-14T19:33:22Z",
+        "generateName": "eric-adp-gs-testapp-654f9b89b4-",
+        "labels": {
+          "app.kubernetes.io/instance": "zkulrus-test2-2",
+          "pod-template-hash": "654f9b89b4",
+          "service": "eric-adp-gs-testapp"
+        },
+        "name": "eric-adp-gs-testapp-654f9b89b4-mdl2k",
+        "namespace": "zkulrus-test2",
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "ReplicaSet",
+            "name": "eric-adp-gs-testapp-654f9b89b4",
+            "uid": "975a641c-a076-4fa4-8ddd-948e89873462"
+          }
+        ],
+        "resourceVersion": "57597622",
+        "uid": "f555c43d-7fc5-478c-9b8a-628719267887"
+      },
+      "spec": {
+        "containers": [
+          {
+            "env": [
+              {
+                "name": "APP_NAME",
+                "value": "eric-adp-gs-testapp"
+              },
+              {
+                "name": "TZ",
+                "value": "Europe/Stockholm"
+              },
+              {
+                "name": "GEODE_LOCATOR_SERVICE_NAME",
+                "value": "eric-data-kvdb-ag-locator"
+              },
+              {
+                "name": "GEODE_LOCATOR_SERVICE_PORT",
+                "value": "10334"
+              },
+              {
+                "name": "GEODE_USERNAME",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "username",
+                    "name": "eric-adp-gs-testapp-adpuser-secret"
+                  }
+                }
+              },
+              {
+                "name": "GEODE_PASSWORD",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "password",
+                    "name": "eric-adp-gs-testapp-adpuser-secret"
+                  }
+                }
+              },
+              {
+                "name": "KAFKA_HOSTNAME",
+                "value": "eric-data-message-bus-kf"
+              },
+              {
+                "name": "KAFKA_SERVICE_PORT",
+                "value": "9092"
+              },
+              {
+                "name": "CASSANDRA_HOSTNAME",
+                "value": "eric-data-wide-column-database-cd"
+              },
+              {
+                "name": "CASSANDRA_SERVICE_PORT",
+                "value": "9042"
+              },
+              {
+                "name": "AH_FAULT_INDICATION_TOPIC",
+                "value": "AdpFaultIndication"
+              },
+              {
+                "name": "AH_STATE_INDICATION_TOPIC",
+                "value": "AdpAlarmStateIndication"
+              },
+              {
+                "name": "AH_SERVICE_NAME",
+                "value": "eric-fh-alarm-handler"
+              },
+              {
+                "name": "AH_SERVICE_PORT",
+                "value": "5005"
+              },
+              {
+                "name": "AH_SERVICE_TIMEOUT",
+                "value": "10"
+              },
+              {
+                "name": "KAFKA_TOPIC",
+                "value": "kafkaLoadtest"
+              },
+              {
+                "name": "SNMP_ALARM_PROVIDER_HOSTNAME",
+                "value": "\u003cMANDATORY\u003e"
+              },
+              {
+                "name": "SNMP_ALARM_PROVIDER_PORT",
+                "value": "162"
+              },
+              {
+                "name": "SNMP_ALARM_PROVIDER_TIMEOUT_IN_SEC",
+                "value": "10"
+              },
+              {
+                "name": "SNMP_ALARM_PROVIDER_RETRIES_COUNT",
+                "value": "2"
+              },
+              {
+                "name": "POSTGRESQL_HOSTNAME",
+                "value": "eric-adp-gs-testapp-db-pg"
+              },
+              {
+                "name": "POSTGRESQL_HOSTNAME_REPLICA",
+                "value": "eric-adp-gs-testapp-db-pg-replica"
+              },
+              {
+                "name": "POSTGRESQL_ENABLE_HA",
+                "value": "true"
+              },
+              {
+                "name": "POSTGRESQL_PORT",
+                "value": "5432"
+              },
+              {
+                "name": "POSTGRESQL_DATABASE",
+                "value": "adp_gs_gstestapp"
+              },
+              {
+                "name": "POSTGRESQL_USER",
+                "value": "gstestapp"
+              },
+              {
+                "name": "POSTGRESQL_PASSWORD",
+                "value": "gstestapppw"
+              },
+              {
+                "name": "CONSUL_HOSTNAME",
+                "value": "eric-enabl-dynamic-infrastructure-cs-dc1-cli"
+              },
+              {
+                "name": "CONSUL_PORT",
+                "value": "8500"
+              },
+              {
+                "name": "CM_SERVICE_NAME",
+                "value": "eric-cm-mediator"
+              },
+              {
+                "name": "CM_PORT",
+                "value": "5003"
+              },
+              {
+                "name": "PM_SERVICE_NAME",
+                "value": "eric-pm-server"
+              },
+              {
+                "name": "PM_PORT",
+                "value": "9090"
+              },
+              {
+                "name": "PM_NAMESPACE",
+                "value": "n01"
+              },
+              {
+                "name": "SFTP_HOST",
+                "value": "adpci07.seli.gic.ericsson.se"
+              },
+              {
+                "name": "SFTP_PORT",
+                "value": "22"
+              },
+              {
+                "name": "SFTP_USER",
+                "value": "adpuser"
+              },
+              {
+                "name": "SFTP_PASSWD",
+                "value": "adpsecret"
+              },
+              {
+                "name": "BRO_HOSTNAME",
+                "value": "eric-ctrl-bro"
+              },
+              {
+                "name": "BRO_PORT",
+                "value": "7001"
+              },
+              {
+                "name": "ZK_HOSTNAME",
+                "value": "eric-data-coordinator-zk"
+              },
+              {
+                "name": "ZK_PORT",
+                "value": "2181"
+              }
+            ],
+            "image": "armdocker.rnd.ericsson.se/proj-adp-cicd-drop/eric-adp-gs-testapp:0.0.1-162",
+            "imagePullPolicy": "Always",
+            "livenessProbe": {
+              "failureThreshold": 3,
+              "httpGet": {
+                "path": "/live",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "initialDelaySeconds": 600,
+              "periodSeconds": 30,
+              "successThreshold": 1,
+              "timeoutSeconds": 15
+            },
+            "name": "eric-adp-gs-testapp",
+            "ports": [
+              {
+                "containerPort": 8080,
+                "name": "http",
+                "protocol": "TCP"
+              }
+            ],
+            "readinessProbe": {
+              "failureThreshold": 3,
+              "httpGet": {
+                "path": "/ready",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "initialDelaySeconds": 30,
+              "periodSeconds": 30,
+              "successThreshold": 1,
+              "timeoutSeconds": 15
+            },
+            "resources": {},
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-4kchj",
+                "readOnly": true
+              }
+            ]
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "nodeName": "node-10-156-133-63",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "serviceAccount": "default",
+        "serviceAccountName": "default",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "tolerationSeconds": 300
+          },
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "tolerationSeconds": 300
+          }
+        ],
+        "volumes": [
+          {
+            "name": "kube-api-access-4kchj",
+            "projected": {
+              "defaultMode": 420,
+              "sources": [
+                {
+                  "serviceAccountToken": {
+                    "expirationSeconds": 3607,
+                    "path": "token"
+                  }
+                },
+                {
+                  "configMap": {
+                    "items": [
+                      {
+                        "key": "ca.crt",
+                        "path": "ca.crt"
+                      }
+                    ],
+                    "name": "kube-root-ca.crt"
+                  }
+                },
+                {
+                  "downwardAPI": {
+                    "items": [
+                      {
+                        "fieldRef": {
+                          "apiVersion": "v1",
+                          "fieldPath": "metadata.namespace"
+                        },
+                        "path": "namespace"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:22Z",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:53Z",
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:53Z",
+            "status": "True",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:22Z",
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "containerID": "containerd://ee402e289287de28f8e995d827ba274722e92670c75de3798aa93a8280919622",
+            "image": "armdocker.rnd.ericsson.se/proj-adp-cicd-drop/eric-adp-gs-testapp:0.0.1-162",
+            "imageID": "armdocker.rnd.ericsson.se/proj-adp-cicd-drop/eric-adp-gs-testapp@sha256:a11da34de67489eac29aff891e7859654d1b004b1baa1cafcfb582812346706c",
+            "lastState": {},
+            "name": "eric-adp-gs-testapp",
+            "ready": true,
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2023-05-14T19:33:23Z"
+              }
+            }
+          }
+        ],
+        "hostIP": "10.156.133.63",
+        "phase": "Running",
+        "podIP": "192.168.122.165",
+        "podIPs": [
+          {
+            "ip": "192.168.122.165"
+          },
+          {
+            "ip": "fc00:1000::7aaa"
+          }
+        ],
+        "qosClass": "BestEffort",
+        "startTime": "2023-05-14T19:33:22Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "annotations": {
+          "cni.projectcalico.org/containerID": "83fbf47021e83bcc877ae2b96206912e8be6fdf154cfbc1027209889e8ee051e",
+          "cni.projectcalico.org/podIP": "192.168.153.236/32",
+          "cni.projectcalico.org/podIPs": "192.168.153.236/32,fc00:1000::99c8/128",
+          "ericsson.com/nf-name": "spider-app-multi-a-v2"
+        },
+        "creationTimestamp": "2023-05-14T19:33:22Z",
+        "generateName": "eric-pm-testapp-controller-746c47d497-",
+        "labels": {
+          "app.kubernetes.io/instance": "zkulrus-test2-2",
+          "app.kubernetes.io/name": "eric-pm-testapp-controller",
+          "app.kubernetes.io/version": "0.4.0-13",
+          "pod-template-hash": "746c47d497"
+        },
+        "name": "eric-pm-testapp-controller-746c47d497-bdw6r",
+        "namespace": "zkulrus-test2",
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "ReplicaSet",
+            "name": "eric-pm-testapp-controller-746c47d497",
+            "uid": "5971f70a-d764-4a0f-819b-00e0cdacc70b"
+          }
+        ],
+        "resourceVersion": "57595892",
+        "uid": "541bb2b4-d0c5-4a86-a442-cd8b337e0bfd"
+      },
+      "spec": {
+        "containers": [
+          {
+            "env": [
+              {
+                "name": "PROMETHEUS_SVC_NAME",
+                "value": "eric-pm-server"
+              },
+              {
+                "name": "PROMETHEUS_SVC_PORT",
+                "value": "9090"
+              },
+              {
+                "name": "INFLUXDB_SVC_NAME",
+                "value": "influxdb-service"
+              },
+              {
+                "name": "INFLUXDB_SVC_PORT",
+                "value": "8086"
+              },
+              {
+                "name": "KUBERNETES_NAMESPACE",
+                "value": "zkulrus-test2"
+              },
+              {
+                "name": "PM_TEST_APP_SVC_NAME",
+                "value": "zkulrus-test2-2-pm-testapp"
+              },
+              {
+                "name": "PM_TEST_APP_SVC_PORT",
+                "value": "8080"
+              }
+            ],
+            "image": "armdocker.rnd.ericsson.se/sandbox/adp-staging/adp-cicd/eric-pm-testapp-controller:0.4.0-13",
+            "imagePullPolicy": "Always",
+            "livenessProbe": {
+              "exec": {
+                "command": [
+                  "pgrep",
+                  "-f",
+                  "python -u ./controller.py"
+                ]
+              },
+              "failureThreshold": 3,
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "timeoutSeconds": 1
+            },
+            "name": "eric-pm-testapp-controller",
+            "ports": [
+              {
+                "containerPort": 80,
+                "protocol": "TCP"
+              }
+            ],
+            "readinessProbe": {
+              "exec": {
+                "command": [
+                  "pgrep",
+                  "-f",
+                  "python -u ./controller.py"
+                ]
+              },
+              "failureThreshold": 3,
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "timeoutSeconds": 1
+            },
+            "resources": {
+              "limits": {
+                "cpu": "100m",
+                "memory": "512Mi"
+              },
+              "requests": {
+                "cpu": "100m",
+                "memory": "256Mi"
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-h87jx",
+                "readOnly": true
+              }
+            ]
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "nodeName": "node-10-156-133-56",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "serviceAccount": "default",
+        "serviceAccountName": "default",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "tolerationSeconds": 300
+          },
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "tolerationSeconds": 300
+          }
+        ],
+        "volumes": [
+          {
+            "name": "kube-api-access-h87jx",
+            "projected": {
+              "defaultMode": 420,
+              "sources": [
+                {
+                  "serviceAccountToken": {
+                    "expirationSeconds": 3607,
+                    "path": "token"
+                  }
+                },
+                {
+                  "configMap": {
+                    "items": [
+                      {
+                        "key": "ca.crt",
+                        "path": "ca.crt"
+                      }
+                    ],
+                    "name": "kube-root-ca.crt"
+                  }
+                },
+                {
+                  "downwardAPI": {
+                    "items": [
+                      {
+                        "fieldRef": {
+                          "apiVersion": "v1",
+                          "fieldPath": "metadata.namespace"
+                        },
+                        "path": "namespace"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:22Z",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:24Z",
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:24Z",
+            "status": "True",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:22Z",
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "containerID": "containerd://8955e58d7be592d035ae48d28962fbb66824c23fea06a618109b9e212bbf2345",
+            "image": "armdocker.rnd.ericsson.se/sandbox/adp-staging/adp-cicd/eric-pm-testapp-controller:0.4.0-13",
+            "imageID": "armdocker.rnd.ericsson.se/sandbox/adp-staging/adp-cicd/eric-pm-testapp-controller@sha256:f0e2941d156960d96a4b9d4353f869fdddf091ff64ca97a042b983c520cee7c4",
+            "lastState": {},
+            "name": "eric-pm-testapp-controller",
+            "ready": true,
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2023-05-14T19:33:24Z"
+              }
+            }
+          }
+        ],
+        "hostIP": "10.156.133.56",
+        "phase": "Running",
+        "podIP": "192.168.153.236",
+        "podIPs": [
+          {
+            "ip": "192.168.153.236"
+          },
+          {
+            "ip": "fc00:1000::99c8"
+          }
+        ],
+        "qosClass": "Burstable",
+        "startTime": "2023-05-14T19:33:22Z"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "annotations": {
+          "cni.projectcalico.org/containerID": "30ac07145df30101f37e975d4aa6d5a8200c0bfa05cf905a6e94298bdcecb69f",
+          "cni.projectcalico.org/podIP": "192.168.159.112/32",
+          "cni.projectcalico.org/podIPs": "192.168.159.112/32,fc00:1000::9f75/128",
+          "ericsson.com/nf-name": "spider-app-multi-a-v2"
+        },
+        "creationTimestamp": "2023-05-14T19:33:22Z",
+        "generateName": "influxdb-service-5ccb977f-",
+        "labels": {
+          "app.kubernetes.io/instance": "zkulrus-test2-2",
+          "pod-template-hash": "5ccb977f",
+          "service": "influxdb-service"
+        },
+        "name": "influxdb-service-5ccb977f-b9dzb",
+        "namespace": "zkulrus-test2",
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "ReplicaSet",
+            "name": "influxdb-service-5ccb977f",
+            "uid": "d2c4cc63-0f98-4b33-a43b-51def73d61fb"
+          }
+        ],
+        "resourceVersion": "57595868",
+        "uid": "149238fe-ab07-40df-a02b-3c505fd6e648"
+      },
+      "spec": {
+        "containers": [
+          {
+            "env": [
+              {
+                "name": "TZ",
+                "value": "Europe/Stockholm"
+              }
+            ],
+            "image": "armdocker.rnd.ericsson.se/sandbox/adp-staging/adp-cicd/influxdb:1.3.7",
+            "imagePullPolicy": "Always",
+            "name": "influxdb-container",
+            "ports": [
+              {
+                "containerPort": 8086,
+                "name": "http-api-port",
+                "protocol": "TCP"
+              }
+            ],
+            "resources": {},
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/var/lib/influxdb",
+                "name": "cache-volume"
+              },
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-mbzcm",
+                "readOnly": true
+              }
+            ]
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "nodeName": "node-10-156-133-46",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "serviceAccount": "default",
+        "serviceAccountName": "default",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "tolerationSeconds": 300
+          },
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "tolerationSeconds": 300
+          }
+        ],
+        "volumes": [
+          {
+            "emptyDir": {},
+            "name": "cache-volume"
+          },
+          {
+            "name": "kube-api-access-mbzcm",
+            "projected": {
+              "defaultMode": 420,
+              "sources": [
+                {
+                  "serviceAccountToken": {
+                    "expirationSeconds": 3607,
+                    "path": "token"
+                  }
+                },
+                {
+                  "configMap": {
+                    "items": [
+                      {
+                        "key": "ca.crt",
+                        "path": "ca.crt"
+                      }
+                    ],
+                    "name": "kube-root-ca.crt"
+                  }
+                },
+                {
+                  "downwardAPI": {
+                    "items": [
+                      {
+                        "fieldRef": {
+                          "apiVersion": "v1",
+                          "fieldPath": "metadata.namespace"
+                        },
+                        "path": "namespace"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:22Z",
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:24Z",
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:24Z",
+            "status": "True",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2023-05-14T19:33:22Z",
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "containerID": "containerd://c56a9ba6e227046888d761f8506baacdcfed854244b8ffaf9540ae6bafebae27",
+            "image": "armdocker.rnd.ericsson.se/sandbox/adp-staging/adp-cicd/influxdb:1.3.7",
+            "imageID": "armdocker.rnd.ericsson.se/sandbox/adp-staging/adp-cicd/influxdb@sha256:8980689abff8f5d4a3374c0d6b69c73687dffdc08eb6907d40a7a573cb6b1761",
+            "lastState": {},
+            "name": "influxdb-container",
+            "ready": true,
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2023-05-14T19:33:23Z"
+              }
+            }
+          }
+        ],
+        "hostIP": "10.156.133.46",
+        "phase": "Running",
+        "podIP": "192.168.159.112",
+        "podIPs": [
+          {
+            "ip": "192.168.159.112"
+          },
+          {
+            "ip": "fc00:1000::9f75"
+          }
+        ],
+        "qosClass": "BestEffort",
+        "startTime": "2023-05-14T19:33:22Z"
+      }
+    }
+  ],
+  "kind": "List",
+  "metadata": {
+    "resourceVersion": "",
+    "selfLink": ""
+  }
+}

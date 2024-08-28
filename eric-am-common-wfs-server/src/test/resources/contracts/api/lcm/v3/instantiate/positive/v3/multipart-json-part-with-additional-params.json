@@ -1,0 +1,9 @@
+{
+  "chartName": "adp-am/my-chart",
+  "lifecycleOperationId": "my-id",
+  "state": "starting",
+  "additionalParams": {
+    "tags.all" : "false",
+    "tags.pm" : "true"
+  }
+}

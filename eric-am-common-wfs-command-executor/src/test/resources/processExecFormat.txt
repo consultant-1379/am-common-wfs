@@ -1,0 +1,20 @@
+LAST DEPLOYED: Wed Jan 23 15:30:09 2019
+NAMESPACE: default
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/ConfigMap
+NAME                      DATA  AGE
+sample-release-name-cfgmap2    3     32d
+sample-release-name-configmap  7     32d
+
+
+NOTES:
+Thank you for installing mychart.
+
+Your release is named sample-release-name.
+
+To learn more about the release, try:
+
+        $ helm status sample-release-name
+        $ helm get sample-release-name

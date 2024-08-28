@@ -1,0 +1,7 @@
+{
+  "errorDetails": [
+    {
+      "message": "No pods found for releaseName release-not-found"
+    }
+  ]
+}

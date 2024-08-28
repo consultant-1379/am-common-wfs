@@ -1,0 +1,27 @@
+{{!
+    COPYRIGHT Ericsson 2024
+
+
+
+    The copyright to the computer program(s) herein is the property of
+
+    Ericsson Inc. The programs may be used and/or copied only with written
+
+    permission from Ericsson Inc. or in accordance with the terms and
+
+    conditions stipulated in the agreement/contract under which the
+
+    program(s) have been supplied.
+}}
+{{!
+  The only field that has been modified from original template is line 22
+  Original file https://github.com/OpenAPITools/openapi-generator/blob/035736f5c413bbdc8e70f840cc2e8ff32da9a5a8/modules/openapi-generator/src/main/resources/JavaSpring/beanValidation.mustache
+}}
+{{#required}}
+{{^isReadOnly}}
+@NotNull{{#vendorExtensions.x-required-message}}(message="{{vendorExtensions.x-required-message}}"){{/vendorExtensions.x-required-message}}
+{{/isReadOnly}}
+{{/required}}{{#isContainer}}{{^isPrimitiveType}}{{^isEnum}}
+@Valid {{/isEnum}}{{/isPrimitiveType}}{{/isContainer}}{{^isContainer}}{{^isPrimitiveType}}
+@Valid {{/isPrimitiveType}}{{/isContainer}}
+{{>beanValidationCore}}

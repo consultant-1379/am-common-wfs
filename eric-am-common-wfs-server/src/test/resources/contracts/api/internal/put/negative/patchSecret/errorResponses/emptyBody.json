@@ -1,0 +1,16 @@
+{
+  "errorDetails": [
+    {
+      "parameterName": "key",
+      "message": "Secret key cannot be null."
+    },
+    {
+      "parameterName": "value",
+      "message": "Secret value cannot be null."
+    },
+    {
+      "parameterName": "namespace",
+      "message": "namespace cannot be null"
+    }
+  ]
+}

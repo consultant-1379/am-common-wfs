@@ -1,0 +1,15 @@
+{
+  "hostUrl" : "https://gevalia.rnd.gic.ericsson.se/k8s/clusters/sgrhhf",
+  "version" : "1.23",
+  "namespaces": [
+    {
+      "name": "kube-system",
+      "uid": "deadbeef-6d62-497d-8de1-ffa0aea9696f"
+    },
+    {
+      "name": "cvnfm",
+      "uid": "4d7be745-4b5e-4361-989b-d8419472edf5"
+    }
+  ]
+}
+

@@ -1,0 +1,15 @@
+{
+  "chartUrl": "https://arm.seli.gic.ericsson.se/artifactory/proj-am-helm-local/acceptance-test/v2/spider-app-flexible-verification-2.190.14.tgz",
+  "lifecycleOperationId": "my-id",
+  "state": "starting",
+  "applicationTimeOut": "400",
+  "namespace": "wfs-acceptance-v2-UNIQUE_NAME",
+  "helmClientVersion": "3.10",
+  "overrideGlobalRegistry": true,
+  "additionalParams": {
+    "tags.all": false,
+    "tags.pm": true,
+    "influxdb.service.type": "ClusterIP",
+    "eric-pm-bulk-reporter.service.type": "ClusterIP"
+  }
+}

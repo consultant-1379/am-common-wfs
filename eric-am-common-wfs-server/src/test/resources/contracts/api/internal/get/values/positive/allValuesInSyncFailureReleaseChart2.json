@@ -1,0 +1,14 @@
+{
+  "TL_scaled_vm.autoscaling.minReplicas": 1,
+  "TL_scaled_vm.autoscaling.maxReplicas": 7,
+  "TL_scaled_vm.autoscaling.engine.enabled": true,
+  "TL_scaled_vm.replicaCount": 7,
+  "PL__scaled_vm.autoscaling.minReplicas": 1,
+  "PL__scaled_vm.autoscaling.maxReplicas": 1,
+  "PL__scaled_vm.autoscaling.engine.enabled": true,
+  "PL__scaled_vm.replicaCount": 1,
+  "JL_scaled_vm.autoscaling.minReplicas": 1,
+  "JL_scaled_vm.autoscaling.maxReplicas": 3,
+  "JL_scaled_vm.autoscaling.engine.enabled": true,
+  "JL_scaled_vm.replicaCount": 3
+}

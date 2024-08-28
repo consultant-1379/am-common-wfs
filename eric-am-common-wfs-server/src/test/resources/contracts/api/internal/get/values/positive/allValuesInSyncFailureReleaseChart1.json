@@ -1,0 +1,4 @@
+{
+  "CL_scaled_vm.autoscaling.engine.enabled": false,
+  "CL_scaled_vm.replicaCount": 3
+}

@@ -1,0 +1,8 @@
+{
+  "errorDetails": [
+    {
+      "parameterName": "releaseName",
+      "message": "releaseName must consist of lower case alphanumeric characters or -. It must start with an alphabetic character, and end with an alphanumeric character"
+    }
+  ]
+}

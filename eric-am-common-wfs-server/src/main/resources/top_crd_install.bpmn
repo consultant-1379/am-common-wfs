@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_0ctcqy2" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.2.0">
+  <bpmn:process id="CRDApplication__top" name="CRD flow" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:startEvent id="StartEvent_1" name="START">
+      <bpmn:outgoing>SequenceFlow_02d683v</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="ExclusiveGateway_12l3gux" name="Install CRDs?" default="SequenceFlow_14493us">
+      <bpmn:incoming>SequenceFlow_19tq80r</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1qh6q3g</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_14493us</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ServiceTask_0p1zaz8" name="Check Evnfm Namespace" camunda:asyncAfter="true" camunda:delegateExpression="${checkEvnfmNamespace}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="namespace">
+            <camunda:script scriptFormat="groovy">execution.getVariable("namespace")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartUrl">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartUrl")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="additionalParams">
+            <camunda:script scriptFormat="groovy">execution.getVariable("additionalParams")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1qh6q3g</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1vhd8lx</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryEvent_1c1a1r5" attachedToRef="ServiceTask_0p1zaz8">
+      <bpmn:outgoing>SequenceFlow_0kaiqjc</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1j01ke9" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1qh6q3g" name="Yes" sourceRef="ExclusiveGateway_12l3gux" targetRef="ServiceTask_0p1zaz8">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("proceedWithCRDInstallation")}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:callActivity id="CallActivity_0razymh" name="Check and Create Image Pull Secret" calledElement="subwf_pull_secret_create">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1vhd8lx</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0sl61tk</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_1e8ef1o" attachedToRef="CallActivity_0razymh">
+      <bpmn:outgoing>SequenceFlow_0j9auof</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1867d9k" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1vhd8lx" sourceRef="ServiceTask_0p1zaz8" targetRef="CallActivity_0razymh" />
+    <bpmn:callActivity id="CallActivity_0vybper" name="Install/Upgrade CRD" calledElement="subwf_helm_command" camunda:asyncBefore="true" camunda:asyncAfter="true">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartUrl">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartUrl")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="namespace">
+            <camunda:script scriptFormat="groovy">execution.getVariable("namespace")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="helmRepoRoot">
+            <camunda:script scriptFormat="groovy">execution.getVariable("helmRepoRoot")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="additionalParams">
+            <camunda:script scriptFormat="groovy">execution.getVariable("additionalParams")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="type">
+            <camunda:script scriptFormat="groovy">execution.setVariable("commandType", "crd")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:outputParameter name="commandOutput">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandOutput")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="appDeployed">
+            <camunda:script scriptFormat="groovy">execution.getVariable("appDeployed")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1u4difi</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0o5twet</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_0lztwna" attachedToRef="CallActivity_0vybper">
+      <bpmn:outgoing>SequenceFlow_1nant0q</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0mqp4l9" />
+    </bpmn:boundaryEvent>
+    <bpmn:callActivity id="CallActivity_0rx4tsv" name="Verify Application Installed" camunda:asyncAfter="true"
+    calledElement="subwf_verify_application_deployed">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0o5twet</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1lk779m</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_10o103w" attachedToRef="CallActivity_0rx4tsv">
+      <bpmn:outgoing>SequenceFlow_0l5ym1x</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_05rhspc" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0o5twet" sourceRef="CallActivity_0vybper" targetRef="CallActivity_0rx4tsv" />
+    <bpmn:endEvent id="EndEvent_0u8z6sr" name="END">
+      <bpmn:incoming>SequenceFlow_0tkmxbp</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:callActivity id="CallActivity_1sn9cm5" name="Validate CRD version" calledElement="subwf_crd_version_comparison">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0kwscij</bpmn:incoming>
+      <bpmn:incoming>Flow_0lek9f5</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_19tq80r</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="SequenceFlow_19tq80r" sourceRef="CallActivity_1sn9cm5" targetRef="ExclusiveGateway_12l3gux" />
+    <bpmn:serviceTask id="ServiceTask_152xm96" name="Calculate Delay and set app timeout" camunda:asyncAfter="true" camunda:delegateExpression="${calculateCamundaDelay}">
+      <bpmn:incoming>SequenceFlow_02d683v</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0kwscij</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_02d683v" sourceRef="StartEvent_1" targetRef="ServiceTask_152xm96" />
+    <bpmn:sequenceFlow id="SequenceFlow_0kwscij" sourceRef="ServiceTask_152xm96" targetRef="CallActivity_1sn9cm5" />
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_Error_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_11805nf</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_02qmo8r</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_0ndq804" attachedToRef="Activity_Publish_Lifecycle_Message_Error_End">
+      <bpmn:outgoing>SequenceFlow_1el73e8</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1w3hn0u" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="EndEvent_1cuobhv" name="END">
+      <bpmn:incoming>SequenceFlow_02qmo8r</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_1el73e8</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_1p6rx4j" />
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_02qmo8r" sourceRef="Activity_Publish_Lifecycle_Message_Error_End" targetRef="EndEvent_1cuobhv" />
+    <bpmn:sequenceFlow id="SequenceFlow_1el73e8" sourceRef="BoundaryEvent_0ndq804" targetRef="EndEvent_1cuobhv" />
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_01pvhw6</bpmn:incoming>
+      <bpmn:incoming>Flow_1mmg0yx</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0tkmxbp</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_1qhax6a" attachedToRef="Activity_Publish_Lifecycle_Message_End">
+      <bpmn:outgoing>SequenceFlow_1v3b81z</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1xlh5ta" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0tkmxbp" sourceRef="Activity_Publish_Lifecycle_Message_End" targetRef="EndEvent_0u8z6sr" />
+    <bpmn:sequenceFlow id="SequenceFlow_14493us" name="No" sourceRef="ExclusiveGateway_12l3gux" targetRef="Activity_0f65ibt" />
+    <bpmn:scriptTask id="Task_SetCRDWorkflowStatus" name="Set CRD Workflow status" scriptFormat="groovy">
+      <bpmn:incoming>SequenceFlow_0388rn0</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_01pvhw6</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+        def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.CRDSuccess");
+        String verifyOutput = (String) execution.getVariable("verifyAppResult");
+        execution.setVariable("message",verifyOutput);
+        logger.info(execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_01pvhw6" sourceRef="Task_SetCRDWorkflowStatus" targetRef="Activity_Publish_Lifecycle_Message_End" />
+    <bpmn:boundaryEvent id="BoundaryEvent_0dvlt0d" attachedToRef="CallActivity_1sn9cm5">
+      <bpmn:outgoing>SequenceFlow_1rzmzzw</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Task_RemoveTempFilesOnSuccess" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>SequenceFlow_13agxdy</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0388rn0</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0388rn0" sourceRef="Task_RemoveTempFilesOnSuccess" targetRef="Task_SetCRDWorkflowStatus" />
+    <bpmn:serviceTask id="Task_RemoveTempFilesOnFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>SequenceFlow_0xpkh1y</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_11805nf</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:scriptTask id="ScriptTask_1t5bi2r" name="Set CRD Error Message" scriptFormat="groovy">
+      <bpmn:incoming>SequenceFlow_1v3b81z</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0j9auof</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_13g3as9</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_19uaikq</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_1rzmzzw</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0kaiqjc</bpmn:incoming>
+      <bpmn:incoming>Flow_1a72ifo</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0xpkh1y</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+        def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.CRDInstallUpgradeFailed");
+        String errorOutput = (String) execution.getVariable("errorMessage");
+        execution.setVariable("commandType","crd");
+        if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+        execution.setVariable("message",errorOutput);
+        } else {
+        execution.setVariable("message","Un-Known exception occured");
+        }
+        logger.error("Failed to create CRDs due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1v3b81z" sourceRef="BoundaryEvent_1qhax6a" targetRef="ScriptTask_1t5bi2r" />
+    <bpmn:sequenceFlow id="SequenceFlow_0j9auof" sourceRef="BoundaryEvent_1e8ef1o" targetRef="ScriptTask_1t5bi2r" />
+    <bpmn:sequenceFlow id="SequenceFlow_0xpkh1y" sourceRef="ScriptTask_1t5bi2r" targetRef="Task_RemoveTempFilesOnFailure" />
+    <bpmn:sequenceFlow id="SequenceFlow_11805nf" sourceRef="Task_RemoveTempFilesOnFailure" targetRef="Activity_Publish_Lifecycle_Message_Error_End" />
+    <bpmn:sequenceFlow id="SequenceFlow_1rzmzzw" sourceRef="BoundaryEvent_0dvlt0d" targetRef="ScriptTask_1t5bi2r" />
+    <bpmn:sequenceFlow id="SequenceFlow_0kaiqjc" sourceRef="BoundaryEvent_1c1a1r5" targetRef="ScriptTask_1t5bi2r" />
+    <bpmn:serviceTask id="ServiceTask_1hbkik5" name="Create Auxiliary Secret" camunda:asyncAfter="true" camunda:delegateExpression="${createCrdAuxiliarySecret}">
+      <bpmn:incoming>SequenceFlow_0sl61tk</bpmn:incoming>
+      <bpmn:outgoing>Flow_0zbfl61</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryEvent_08y9foh" attachedToRef="ServiceTask_1hbkik5">
+      <bpmn:outgoing>SequenceFlow_13g3as9</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1c8bl8z" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0sl61tk" sourceRef="CallActivity_0razymh" targetRef="ServiceTask_1hbkik5" />
+    <bpmn:sequenceFlow id="SequenceFlow_13g3as9" sourceRef="BoundaryEvent_08y9foh" targetRef="ScriptTask_1t5bi2r" />
+    <bpmn:serviceTask id="ServiceTask_0wq6atl" name="Remove Auxiliary Secret" camunda:delegateExpression="${deleteAuxiliarySecret}">
+      <bpmn:incoming>SequenceFlow_1nant0q</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0l5ym1x</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_19uaikq</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1nant0q" sourceRef="BoundaryEvent_0lztwna" targetRef="ServiceTask_0wq6atl" />
+    <bpmn:sequenceFlow id="SequenceFlow_0l5ym1x" sourceRef="BoundaryEvent_10o103w" targetRef="ServiceTask_0wq6atl" />
+    <bpmn:sequenceFlow id="SequenceFlow_19uaikq" sourceRef="ServiceTask_0wq6atl" targetRef="ScriptTask_1t5bi2r" />
+    <bpmn:serviceTask id="ServiceTask_1x2aem4" name="Remove Auxiliary Secret" camunda:delegateExpression="${deleteAuxiliarySecret}">
+      <bpmn:incoming>SequenceFlow_1lk779m</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_13agxdy</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1lk779m" sourceRef="CallActivity_0rx4tsv" targetRef="ServiceTask_1x2aem4" />
+    <bpmn:sequenceFlow id="SequenceFlow_13agxdy" sourceRef="ServiceTask_1x2aem4" targetRef="Task_RemoveTempFilesOnSuccess" />
+    <bpmn:serviceTask id="Activity_0f65ibt" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>SequenceFlow_14493us</bpmn:incoming>
+      <bpmn:outgoing>Flow_1mmg0yx</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1mmg0yx" sourceRef="Activity_0f65ibt" targetRef="Activity_Publish_Lifecycle_Message_End" />
+    <bpmn:exclusiveGateway id="Gateway_1x4tk7w" name="Retry CRD installation attempt?" default="Flow_1u4difi">
+      <bpmn:incoming>Flow_0zbfl61</bpmn:incoming>
+      <bpmn:outgoing>Flow_1u4difi</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0cvuj47</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0zbfl61" sourceRef="ServiceTask_1hbkik5" targetRef="Gateway_1x4tk7w" />
+    <bpmn:sequenceFlow id="Flow_1u4difi" name="No" sourceRef="Gateway_1x4tk7w" targetRef="CallActivity_0vybper" />
+    <bpmn:sequenceFlow id="Flow_0cvuj47" name="Yes" sourceRef="Gateway_1x4tk7w" targetRef="Event_0b9jzho">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("retryCRDInstallation")}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:intermediateCatchEvent id="Event_0b9jzho">
+      <bpmn:incoming>Flow_0cvuj47</bpmn:incoming>
+      <bpmn:outgoing>Flow_0lek9f5</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1ho76eh">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">10s</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_0lek9f5" sourceRef="Event_0b9jzho" targetRef="CallActivity_1sn9cm5" />
+    <bpmn:boundaryEvent id="Event_0yx73v0" attachedToRef="ServiceTask_1x2aem4">
+      <bpmn:outgoing>Flow_1a72ifo</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0itud37" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_1a72ifo" sourceRef="Event_0yx73v0" targetRef="ScriptTask_1t5bi2r" />
+  </bpmn:process>
+  <bpmn:error id="Error_1p6rx4j" name="Crd_Install_Failed" errorCode="error.crd.install.upgrade.failed" />
+  <bpmn:error id="Error_0rj5k26" name="Crd_Validation_failed" errorCode="error.crd.validation.failed" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="CRDApplication__top">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="156" y="289" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="156" y="332" width="36" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_12l3gux_di" bpmnElement="ExclusiveGateway_12l3gux" isMarkerVisible="true">
+        <dc:Bounds x="743" y="282" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="734" y="339" width="69" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0p1zaz8_di" bpmnElement="ServiceTask_0p1zaz8">
+        <dc:Bounds x="880" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0razymh_di" bpmnElement="CallActivity_0razymh">
+        <dc:Bounds x="1072" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0vybper_di" bpmnElement="CallActivity_0vybper">
+        <dc:Bounds x="1593" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0rx4tsv_di" bpmnElement="CallActivity_0rx4tsv">
+        <dc:Bounds x="1801" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0u8z6sr_di" bpmnElement="EndEvent_0u8z6sr">
+        <dc:Bounds x="2610" y="289" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2616" y="332" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_10btyeb_di" bpmnElement="CallActivity_1sn9cm5">
+        <dc:Bounds x="515" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_152xm96_di" bpmnElement="ServiceTask_152xm96">
+        <dc:Bounds x="303" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_05j9yhp_di" bpmnElement="Activity_Publish_Lifecycle_Message_Error_End">
+        <dc:Bounds x="1261" y="768" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_12ckyax_di" bpmnElement="EndEvent_1cuobhv">
+        <dc:Bounds x="1293" y="901" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1299" y="944" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0nkkepf_di" bpmnElement="Activity_Publish_Lifecycle_Message_End">
+        <dc:Bounds x="2432" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_1ocj9nh_di" bpmnElement="Task_SetCRDWorkflowStatus">
+        <dc:Bounds x="2264" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0fkbi6m_di" bpmnElement="Task_RemoveTempFilesOnSuccess">
+        <dc:Bounds x="2099" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_09e41r5_di" bpmnElement="Task_RemoveTempFilesOnFailure">
+        <dc:Bounds x="1261" y="649" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_1t5bi2r_di" bpmnElement="ScriptTask_1t5bi2r">
+        <dc:Bounds x="1261" y="535" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1hbkik5_di" bpmnElement="ServiceTask_1hbkik5">
+        <dc:Bounds x="1261" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0wq6atl_di" bpmnElement="ServiceTask_0wq6atl">
+        <dc:Bounds x="1593" y="425" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1x2aem4_di" bpmnElement="ServiceTask_1x2aem4">
+        <dc:Bounds x="1950" y="267" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0f65ibt_di" bpmnElement="Activity_0f65ibt">
+        <dc:Bounds x="1190" y="79" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1x4tk7w_di" bpmnElement="Gateway_1x4tk7w" isMarkerVisible="true">
+        <dc:Bounds x="1455" y="282" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1457" y="339" width="54" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_101bajm_di" bpmnElement="Event_0b9jzho">
+        <dc:Bounds x="1012" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_08y9foh_di" bpmnElement="BoundaryEvent_08y9foh">
+        <dc:Bounds x="1293" y="329" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_14xmsds_di" bpmnElement="BoundaryEvent_0dvlt0d">
+        <dc:Bounds x="545" y="329" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1qhax6a_di" bpmnElement="BoundaryEvent_1qhax6a">
+        <dc:Bounds x="2432" y="329" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0ndq804_di" bpmnElement="BoundaryEvent_0ndq804">
+        <dc:Bounds x="1243" y="830" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_10o103w_di" bpmnElement="BoundaryEvent_10o103w">
+        <dc:Bounds x="1833" y="329" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0lztwna_di" bpmnElement="BoundaryEvent_0lztwna">
+        <dc:Bounds x="1624" y="329" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1e8ef1o_di" bpmnElement="BoundaryEvent_1e8ef1o">
+        <dc:Bounds x="1104" y="329" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1c1a1r5_di" bpmnElement="BoundaryEvent_1c1a1r5">
+        <dc:Bounds x="912" y="329" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1l7a1tc_di" bpmnElement="Event_0yx73v0">
+        <dc:Bounds x="1982" y="329" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1qh6q3g_di" bpmnElement="SequenceFlow_1qh6q3g">
+        <di:waypoint x="793" y="307" />
+        <di:waypoint x="880" y="307" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="828" y="289" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1vhd8lx_di" bpmnElement="SequenceFlow_1vhd8lx">
+        <di:waypoint x="980" y="307" />
+        <di:waypoint x="1072" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0o5twet_di" bpmnElement="SequenceFlow_0o5twet">
+        <di:waypoint x="1693" y="307" />
+        <di:waypoint x="1801" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_19tq80r_di" bpmnElement="SequenceFlow_19tq80r">
+        <di:waypoint x="615" y="307" />
+        <di:waypoint x="743" y="307" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="521" y="225" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_02d683v_di" bpmnElement="SequenceFlow_02d683v">
+        <di:waypoint x="192" y="307" />
+        <di:waypoint x="303" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0kwscij_di" bpmnElement="SequenceFlow_0kwscij">
+        <di:waypoint x="403" y="307" />
+        <di:waypoint x="515" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_02qmo8r_di" bpmnElement="SequenceFlow_02qmo8r">
+        <di:waypoint x="1311" y="848" />
+        <di:waypoint x="1311" y="901" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1el73e8_di" bpmnElement="SequenceFlow_1el73e8">
+        <di:waypoint x="1261" y="866" />
+        <di:waypoint x="1261" y="919" />
+        <di:waypoint x="1293" y="919" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0tkmxbp_di" bpmnElement="SequenceFlow_0tkmxbp">
+        <di:waypoint x="2532" y="307" />
+        <di:waypoint x="2610" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_14493us_di" bpmnElement="SequenceFlow_14493us">
+        <di:waypoint x="768" y="282" />
+        <di:waypoint x="768" y="119" />
+        <di:waypoint x="1190" y="119" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1639" y="101" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_01pvhw6_di" bpmnElement="SequenceFlow_01pvhw6">
+        <di:waypoint x="2364" y="307" />
+        <di:waypoint x="2432" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0388rn0_di" bpmnElement="SequenceFlow_0388rn0">
+        <di:waypoint x="2199" y="307" />
+        <di:waypoint x="2264" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1v3b81z_di" bpmnElement="SequenceFlow_1v3b81z">
+        <di:waypoint x="2450" y="365" />
+        <di:waypoint x="2450" y="575" />
+        <di:waypoint x="1361" y="575" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0j9auof_di" bpmnElement="SequenceFlow_0j9auof">
+        <di:waypoint x="1122" y="365" />
+        <di:waypoint x="1122" y="550" />
+        <di:waypoint x="1261" y="550" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0xpkh1y_di" bpmnElement="SequenceFlow_0xpkh1y">
+        <di:waypoint x="1311" y="615" />
+        <di:waypoint x="1311" y="649" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_11805nf_di" bpmnElement="SequenceFlow_11805nf">
+        <di:waypoint x="1311" y="729" />
+        <di:waypoint x="1311" y="768" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1rzmzzw_di" bpmnElement="SequenceFlow_1rzmzzw">
+        <di:waypoint x="563" y="365" />
+        <di:waypoint x="563" y="600" />
+        <di:waypoint x="1261" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0kaiqjc_di" bpmnElement="SequenceFlow_0kaiqjc">
+        <di:waypoint x="930" y="365" />
+        <di:waypoint x="930" y="575" />
+        <di:waypoint x="1260" y="575" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0sl61tk_di" bpmnElement="SequenceFlow_0sl61tk">
+        <di:waypoint x="1172" y="307" />
+        <di:waypoint x="1261" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_13g3as9_di" bpmnElement="SequenceFlow_13g3as9">
+        <di:waypoint x="1311" y="365" />
+        <di:waypoint x="1311" y="535" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1nant0q_di" bpmnElement="SequenceFlow_1nant0q">
+        <di:waypoint x="1642" y="365" />
+        <di:waypoint x="1643" y="425" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0l5ym1x_di" bpmnElement="SequenceFlow_0l5ym1x">
+        <di:waypoint x="1851" y="365" />
+        <di:waypoint x="1851" y="465" />
+        <di:waypoint x="1693" y="465" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_19uaikq_di" bpmnElement="SequenceFlow_19uaikq">
+        <di:waypoint x="1593" y="465" />
+        <di:waypoint x="1408" y="465" />
+        <di:waypoint x="1408" y="575" />
+        <di:waypoint x="1361" y="575" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1lk779m_di" bpmnElement="SequenceFlow_1lk779m">
+        <di:waypoint x="1901" y="307" />
+        <di:waypoint x="1950" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_13agxdy_di" bpmnElement="SequenceFlow_13agxdy">
+        <di:waypoint x="2050" y="307" />
+        <di:waypoint x="2099" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mmg0yx_di" bpmnElement="Flow_1mmg0yx">
+        <di:waypoint x="1290" y="119" />
+        <di:waypoint x="2482" y="119" />
+        <di:waypoint x="2482" y="267" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0zbfl61_di" bpmnElement="Flow_0zbfl61">
+        <di:waypoint x="1361" y="307" />
+        <di:waypoint x="1455" y="307" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1u4difi_di" bpmnElement="Flow_1u4difi">
+        <di:waypoint x="1504" y="306" />
+        <di:waypoint x="1593" y="308" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1542" y="289" width="14" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0cvuj47_di" bpmnElement="Flow_0cvuj47">
+        <di:waypoint x="1480" y="282" />
+        <di:waypoint x="1480" y="200" />
+        <di:waypoint x="1048" y="200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1255" y="162" width="19" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0lek9f5_di" bpmnElement="Flow_0lek9f5">
+        <di:waypoint x="1012" y="200" />
+        <di:waypoint x="565" y="200" />
+        <di:waypoint x="565" y="267" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1a72ifo_di" bpmnElement="Flow_1a72ifo">
+        <di:waypoint x="2000" y="365" />
+        <di:waypoint x="2000" y="575" />
+        <di:waypoint x="1361" y="575" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

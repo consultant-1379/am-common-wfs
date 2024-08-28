@@ -1,0 +1,536 @@
+#
+# COPYRIGHT Ericsson 2024
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+openapi: 3.0.3
+info:
+  version: 0.0.1
+  title: Common Workflow Service
+  description: >
+    Common Workflow Service with multipart requestBody
+
+servers:
+  - url: '{protocol}://{hostname}/{basePath}'
+    variables:
+      protocol:
+        default: https
+      hostname:
+        default: am-common-wfs
+      basePath:
+        default: api
+
+tags:
+  - name: Internal Multipart
+    description: Groups all the internal operations with multipart requestBody.
+  - name: Lcm Multipart
+    description: Groups all lifecycle management with multipart requestBody.
+
+components:
+  schemas:
+    RollbackMultipartInfo:
+      type: object
+      properties:
+        json:
+          type: string
+        clusterConfig:
+          type: string
+          format: binary
+    MultipartInfo:
+      type: object
+      properties:
+        json:
+          type: string
+        values:
+          type: string
+          format: binary
+        additionalValues:
+          type: string
+          format: binary
+        clusterConfig:
+          type: string
+          format: binary
+paths:
+  /lcm/v3/resources/{releaseName}/instantiate:
+    post:
+      tags:
+        - Lcm Multipart
+      description: |
+        Create resource
+        The POST method creates a new resource.
+      operationId: instantiateV3Resource
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+      requestBody:
+        description: The resource creation parameters
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MultipartInfo'
+      responses:
+        '202':
+          $ref: 'mainYaml/api.yaml#/components/responses/Accepted'
+        '400':
+          $ref: 'mainYaml/api.yaml#/components/responses/BadRequest'
+  /lcm/v3/resources/{releaseName}/upgrade:
+    post:
+      tags:
+        - Lcm Multipart
+      operationId: upgradeV3Resource
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+      requestBody:
+        description: The upgrade resource parameters
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MultipartInfo'
+      responses:
+        '202':
+          $ref: 'mainYaml/api.yaml#/components/responses/Accepted'
+        '400':
+          $ref: 'mainYaml/api.yaml#/components/responses/BadRequest'
+  /lcm/v3/resources/{releaseName}/scale:
+    post:
+      tags:
+        - Lcm Multipart
+      operationId: scaleV3Resource
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+      requestBody:
+        description: The scale resource parameters
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MultipartInfo'
+      responses:
+        '202':
+          $ref: 'mainYaml/api.yaml#/components/responses/Accepted'
+        '400':
+          $ref: 'mainYaml/api.yaml#/components/responses/BadRequest'
+  /lcm/v3/resources/{releaseName}/rollback:
+    post:
+      tags:
+        - Lcm Multipart
+      operationId: rollbackV3Resource
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+      requestBody:
+        description: The rollback resource parameters
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RollbackMultipartInfo'
+      responses:
+        '202':
+          $ref: 'mainYaml/api.yaml#/components/responses/Accepted'
+        '400':
+          $ref: 'mainYaml/api.yaml#/components/responses/BadRequest'
+  /lcm/v3/resources/{releaseName}/terminate:
+    post:
+      tags:
+        - Lcm Multipart
+      operationId: terminateV3Resource
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+        - name: applicationTimeOut
+          in: query
+          description: |
+            Maximum time allocated for application instantiation.
+          schema:
+            type: string
+        - name: skipVerification
+          in: query
+          description: |
+            Flag indicating whether to bypass the Application Verification Checks.
+          schema:
+            type: boolean
+            default: false
+        - name: cleanUpResources
+          in: query
+          description: |
+            Remove Persistent Volume Claims and Persistent Volumes of an application.
+          schema:
+            type: boolean
+            default: false
+        - name: clusterName
+          in: query
+          description: |
+            Cluster name where the resource is located.
+          schema:
+            type: string
+            pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+        - name: lifecycleOperationId
+          in: query
+          description: |
+            the lifecycle operation id related to this request.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+        - name: state
+          in: query
+          description: |
+            the current lifecycle state of the lifecycle operation id.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "STATE_BLANK_EMPTY"
+          x-required-message: 'STATE_NULL'
+        - name: skipJobVerification
+          in: query
+          description: |
+            Flag indicating whether to bypass the Application Verification Checks.
+          schema:
+            type: boolean
+            default: false
+        - name: namespace
+          in: query
+          description: |
+            The namespace the resource is located in.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "NAMESPACE_EMPTY"
+          x-required-message: 'NAMESPACE_NULL'
+        - name: helmClientVersion
+          in: query
+          description: |
+            Helm version to use for operation.
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+      responses:
+        '202':
+          $ref: 'mainYaml/api.yaml#/components/responses/Accepted'
+        '400':
+          $ref: 'mainYaml/api.yaml#/components/responses/BadRequest'
+  /internal/v2/namespaces/{namespace}/delete:
+    post:
+      tags:
+        - Internal Multipart
+      operationId: deleteNamespace
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: namespace
+          in: path
+          description: |
+            namespace of the resource.
+          schema:
+            type: string
+          required: true
+        - name: releaseName
+          in: query
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+        - name: applicationTimeOut
+          in: query
+          description: |
+            Maximum time allocated for application instantiation.
+          schema:
+            type: string
+        - name: clusterName
+          in: query
+          description: |
+            Cluster name where the resource is located.
+          schema:
+            type: string
+            pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+          required: true
+        - name: lifecycleOperationId
+          in: query
+          description: |
+            the lifecycle operation id related to this request.
+          schema:
+            type: string
+            minLength: 1
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+      responses:
+        '202':
+          $ref: 'mainYaml/api.yaml#/components/responses/AcceptedNoBody'
+        '400':
+          $ref: 'mainYaml/api.yaml#/components/responses/BadRequest'
+        '500':
+          $ref: 'mainYaml/api.yaml#/components/responses/InternalServerError'
+  /internal/kubernetes/pods/scale/down:
+    post:
+      tags:
+        - Internal Multipart
+      operationId: scaleDown
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: The scale down resource parameters
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+                json:
+                  type: string
+      responses:
+        '202':
+          $ref: 'mainYaml/api.yaml#/components/responses/AcceptedNoBody'
+        '400':
+          $ref: 'mainYaml/api.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: 'mainYaml/api.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'mainYaml/api.yaml#/components/responses/InternalServerError'
+  /internal/kubernetes/pvcs/{releaseName}/delete:
+    post:
+      tags:
+        - Internal Multipart
+      operationId: deletePvcs
+      parameters:
+        - name: Idempotency-key
+          description: |
+            Unique request identifier which is generated automatically.
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: releaseName
+          in: path
+          description: |
+            Identifier of the resource.
+          schema:
+            type: string
+            pattern: '[a-z]([-a-z0-9]*[a-z0-9])?'
+          x-pattern-message: 'RELEASE_NAME_ERROR_MSG'
+          required: true
+        - name: applicationTimeOut
+          in: query
+          description: |
+            Maximum time allocated for application instantiation.
+          schema:
+            type: string
+        - name: clusterName
+          in: query
+          description: |
+            Cluster name where the resource is located.
+          schema:
+            type: string
+            pattern: '[0-9a-zA-Z][0-9a-zA-Z-_]*(\.config)?$'
+          x-pattern-message: 'CLUSTER_NAME_ERROR_MSG'
+        - name: lifecycleOperationId
+          in: query
+          description: |
+            the lifecycle operation id related to this request.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "LIFECYCLE_OPERATION_ID_BLANK_EMPTY"
+          x-required-message: 'LIFECYCLE_OPERATION_ID_NULL'
+        - name: state
+          in: query
+          description: |
+            the current lifecycle state of the lifecycle operation id.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "STATE_BLANK_EMPTY"
+          x-required-message: 'STATE_NULL'
+        - name: namespace
+          in: query
+          description: |
+            The namespace the resource is located in.
+          schema:
+            type: string
+            minLength: 1
+          required: true
+          x-message: "NAMESPACE_EMPTY"
+          x-required-message: 'NAMESPACE_NULL'
+        - name: labels
+          in: query
+          description: |
+            List of labels for which pvcs need to be deleted
+          schema:
+            type: array
+            items:
+              type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+      responses:
+        '202':
+          $ref: 'mainYaml/api.yaml#/components/responses/AcceptedNoBody'
+        '400':
+          $ref: 'mainYaml/api.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: 'mainYaml/api.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'mainYaml/api.yaml#/components/responses/InternalServerError'
+  /internal/kubernetes/secrets/{secretName}:
+    put:
+      tags:
+        - Internal Multipart
+      operationId: patchSecretInNamespace
+      parameters:
+        - name: secretName
+          in: path
+          description: |
+            Name of the secret.
+          schema:
+            type: string
+          required: true
+      requestBody:
+        description: Parameters to patch a Secret
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                clusterConfig:
+                  type: string
+                  format: binary
+                json:
+                  type: string
+      responses:
+        '202':
+          $ref: 'mainYaml/api.yaml#/components/responses/AcceptedNoBody'
+        '400':
+          $ref: 'mainYaml/api.yaml#/components/responses/BadRequest'
+        '404':
+          $ref: 'mainYaml/api.yaml#/components/responses/NotFound'
+        '500':
+          $ref: 'mainYaml/api.yaml#/components/responses/InternalServerError'

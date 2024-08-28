@@ -1,0 +1,6 @@
+{
+  "namespace": "",
+  "clusterName": "default",
+  "key": "secret-key",
+  "value": "test value for the secret key"
+}

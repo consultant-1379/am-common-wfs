@@ -1,0 +1,33 @@
+#
+# COPYRIGHT Ericsson 2024
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+spring:
+    profiles: h2
+
+database:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MVCC=TRUE;MODE=MySQL;INIT=RUNSCRIPT FROM 'classpath:db/dev/init.sql'
+    username: sa
+    password:
+
+spring.jpa.properties:
+        hibernate.dialect: org.hibernate.dialect.MySQLInnoDBDialect
+        hibernate.hikari:
+            jdbcUrl: ${database.url}
+            username: ${database.username}
+            password: ${database.password}
+            maximumPoolSize: 10
+            driverClassName: org.h2.Driver
+

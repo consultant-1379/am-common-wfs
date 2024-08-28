@@ -1,0 +1,8 @@
+{
+  "errorDetails": [
+    {
+      "parameterName": "namespace",
+      "message": "namespace cannot be empty"
+    }
+  ]
+}

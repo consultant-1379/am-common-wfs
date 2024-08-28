@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_03mi9ft" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.7.0">
+  <bpmn:process id="UpgradeApplication__top" name="Upgrade Application" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:startEvent id="StartEvent_Upgrade" name="START">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="releaseName" label="releaseName" type="string" />
+          <camunda:formField id="chartUrl" label="chartUrl" type="string" />
+          <camunda:formField id="chartName" label="chartName" type="string" />
+          <camunda:formField id="chartVersion" label="chartVersion" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>SequenceFlow_0onvbrq</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Upgrade_ValidateInput" name="Validate Input" camunda:delegateExpression="${upgradeValidationTask}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartUrl">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartUrl")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="additionalParams">
+            <camunda:script scriptFormat="groovy">execution.getVariable("additionalParams")</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0onvbrq</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0xa6e8i</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="BoundaryEvent_Upgrade_ValidateInput" attachedToRef="Task_Upgrade_ValidateInput">
+      <bpmn:outgoing>Flow_1i4ulyk</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:scriptTask id="Task_0mb4gy9" name="Set Workflow Status" scriptFormat="groovy">
+      <bpmn:incoming>Flow_16lwqxj</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0q1gj5a</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.UpgradeSuccess");
+String verifyOutput = (String) execution.getVariable("verifyAppResult");
+execution.setVariable("message",verifyOutput);
+logger.info(execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:endEvent id="EndEvent_0k0j8kj" name="END">
+      <bpmn:incoming>SequenceFlow_0dr2osg</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:scriptTask id="Task_Upgrade_LogFailure" name="Log Upgrade Failure" scriptFormat="groovy">
+      <bpmn:incoming>Flow_10ub4mr</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1tteaix</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.UpgradeFailed");
+String errorOutput = (String) execution.getVariable("errorMessage");
+if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+    execution.setVariable("message",errorOutput);
+} else {
+    execution.setVariable("message","unknown exception occured");
+}
+logger.error("Failed to upgrade application due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:endEvent id="EndEvent_Upgrade_Error" name="ERROR END">
+      <bpmn:incoming>SequenceFlow_1y8pio6</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_19yu142</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_1nnt68t" />
+    </bpmn:endEvent>
+    <bpmn:callActivity id="CallActivity_086sw0b" name="Set revision and description" camunda:asyncBefore="true" camunda:asyncAfter="true"
+    calledElement="subwf_helm_history">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="lastHistory">true</camunda:inputParameter>
+          <camunda:outputParameter name="revision">
+            <camunda:script scriptFormat="groovy">execution.getVariable("revision")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="description">
+            <camunda:script scriptFormat="groovy">execution.getVariable("description")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1a73t8d</bpmn:incoming>
+      <bpmn:outgoing>Flow_14bgx7i</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="Task_Upgrade_CheckImagePullSecret" name="Check and Create Image Pull Secret" camunda:asyncBefore="true"
+    camunda:asyncAfter="true" calledElement="subwf_pull_secret_create">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_07q6qt2</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1f5aml8</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_Upgrade_CheckImagePullSecret" attachedToRef="Task_Upgrade_CheckImagePullSecret">
+      <bpmn:outgoing>Flow_1wnfu06</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0xa6e8i" sourceRef="Task_Upgrade_ValidateInput" targetRef="ServiceTask_03ak1or" />
+    <bpmn:serviceTask id="ServiceTask_03ak1or" name="Calculate Delay and set app timeout" camunda:asyncAfter="true" camunda:delegateExpression="${calculateCamundaDelay}">
+      <bpmn:incoming>SequenceFlow_0xa6e8i</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_07q6qt2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_07q6qt2" sourceRef="ServiceTask_03ak1or" targetRef="Task_Upgrade_CheckImagePullSecret" />
+    <bpmn:sequenceFlow id="SequenceFlow_0onvbrq" sourceRef="StartEvent_Upgrade" targetRef="Task_Upgrade_ValidateInput" />
+    <bpmn:callActivity id="CallActivity_1p36x1s" name="Upgrade Application" camunda:asyncAfter="true" calledElement="subwf_helm_command">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="namespace">
+            <camunda:script scriptFormat="groovy">execution.getVariable("namespace")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="helmRepoRoot">
+            <camunda:script scriptFormat="groovy">execution.getVariable("helmRepoRoot")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="additionalParams">
+            <camunda:script scriptFormat="groovy">execution.getVariable("additionalParams")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="type">
+            <camunda:script scriptFormat="groovy">execution.setVariable("commandType", "upgrade")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="chartUrl">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartUrl")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:outputParameter name="command">
+            <camunda:script scriptFormat="groovy">execution.getVariable("command")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="commandOutput">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandOutput")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1f5aml8</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1czbhzf</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_0oo73c5" attachedToRef="CallActivity_1p36x1s">
+      <bpmn:outgoing>Flow_0ovblfa</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:callActivity id="CallActivity_1b764wf" name="Verify Upgrade" camunda:asyncAfter="true" calledElement="subwf_verify_application_deployed">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1czbhzf</bpmn:incoming>
+      <bpmn:outgoing>Flow_1a73t8d</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_0e08qi5" attachedToRef="CallActivity_1b764wf">
+      <bpmn:outgoing>Flow_0k06xwh</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1f5aml8" sourceRef="Task_Upgrade_CheckImagePullSecret" targetRef="CallActivity_1p36x1s" />
+    <bpmn:sequenceFlow id="SequenceFlow_1czbhzf" sourceRef="CallActivity_1p36x1s" targetRef="CallActivity_1b764wf" />
+    <bpmn:sequenceFlow id="SequenceFlow_0q1gj5a" sourceRef="Task_0mb4gy9" targetRef="Activity_Publish_Lifecycle_Message_End" />
+    <bpmn:sequenceFlow id="SequenceFlow_0dr2osg" sourceRef="Activity_Publish_Lifecycle_Message_End" targetRef="EndEvent_0k0j8kj" />
+    <bpmn:sequenceFlow id="SequenceFlow_1tteaix" sourceRef="Task_Upgrade_LogFailure" targetRef="Activity_Publish_Lifecycle_Message_Error_End" />
+    <bpmn:sequenceFlow id="SequenceFlow_1y8pio6" sourceRef="Activity_Publish_Lifecycle_Message_Error_End" targetRef="EndEvent_Upgrade_Error" />
+    <bpmn:boundaryEvent id="BoundaryEvent_0zn213p" attachedToRef="CallActivity_086sw0b">
+      <bpmn:outgoing>Flow_1e9uehm</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0q1gj5a</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0dr2osg</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_publish_lifecycle_message" attachedToRef="Activity_Publish_Lifecycle_Message_End">
+      <bpmn:outgoing>Flow_1mtd82v</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="BoundaryEvent_publish_lifecycle_message_error" attachedToRef="Activity_Publish_Lifecycle_Message_Error_End">
+      <bpmn:outgoing>SequenceFlow_19yu142</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_19yu142" sourceRef="BoundaryEvent_publish_lifecycle_message_error" targetRef="EndEvent_Upgrade_Error" />
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_Error_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1tteaix</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1y8pio6</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:scriptTask id="Script_Log_Failures" name="Log Upgrade Failure" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0uji23y</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_110ipm4</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.UpgradeFailed");
+String errorOutput = (String) execution.getVariable("errorMessage");
+if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+    execution.setVariable("message",errorOutput);
+} else {
+    execution.setVariable("message","unknown exception occured");
+}
+logger.error("Failed to upgrade application due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_110ipm4" sourceRef="Script_Log_Failures" targetRef="Upgrade_Validation_Error_Event" />
+    <bpmn:endEvent id="Upgrade_Validation_Error_Event" name="VALIDATION ERROR END">
+      <bpmn:incoming>SequenceFlow_110ipm4</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_08qzoos" />
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnSuccess" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_14bgx7i</bpmn:incoming>
+      <bpmn:outgoing>Flow_16lwqxj</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnValidationFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_1i4ulyk</bpmn:incoming>
+      <bpmn:outgoing>Flow_0uji23y</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0uji23y" sourceRef="Task_RemoveTemporaryFilesOnValidationFailure" targetRef="Script_Log_Failures" />
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_1wnfu06</bpmn:incoming>
+      <bpmn:incoming>Flow_0ovblfa</bpmn:incoming>
+      <bpmn:incoming>Flow_0k06xwh</bpmn:incoming>
+      <bpmn:incoming>Flow_1e9uehm</bpmn:incoming>
+      <bpmn:incoming>Flow_1mtd82v</bpmn:incoming>
+      <bpmn:outgoing>Flow_10ub4mr</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_10ub4mr" sourceRef="Task_RemoveTemporaryFilesOnFailure" targetRef="Task_Upgrade_LogFailure" />
+    <bpmn:sequenceFlow id="Flow_1i4ulyk" sourceRef="BoundaryEvent_Upgrade_ValidateInput" targetRef="Task_RemoveTemporaryFilesOnValidationFailure" />
+    <bpmn:sequenceFlow id="Flow_1wnfu06" sourceRef="BoundaryEvent_Upgrade_CheckImagePullSecret" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_0ovblfa" sourceRef="BoundaryEvent_0oo73c5" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_0k06xwh" sourceRef="BoundaryEvent_0e08qi5" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_1e9uehm" sourceRef="BoundaryEvent_0zn213p" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_1mtd82v" sourceRef="BoundaryEvent_publish_lifecycle_message" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_1a73t8d" sourceRef="CallActivity_1b764wf" targetRef="CallActivity_086sw0b" />
+    <bpmn:sequenceFlow id="Flow_14bgx7i" sourceRef="CallActivity_086sw0b" targetRef="Task_RemoveTemporaryFilesOnSuccess" />
+    <bpmn:sequenceFlow id="Flow_16lwqxj" sourceRef="Task_RemoveTemporaryFilesOnSuccess" targetRef="Task_0mb4gy9" />
+  </bpmn:process>
+  <bpmn:error id="Error_18bedhy" name="Error_3nf5nco" />
+  <bpmn:error id="Error_1nnt68t" name="UpgradeFailed" errorCode="error.common.upgrade.failed" />
+  <bpmn:error id="Error_0qdu2np" name="Required Label Not Found" errorCode="error.com.missing.required.label" />
+  <bpmn:error id="Error_15g2mre" name="Application Timeout" errorCode="error.com.application.timedOut.exception" />
+  <bpmn:error id="Error_1uvogr2" name="Upgrade failed" errorCode="Upgrade .failed" />
+  <bpmn:error id="Error_08qzoos" name="Validation_failed" errorCode="error.upgrade.validation.error" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="UpgradeApplication__top">
+      <bpmndi:BPMNEdge id="Flow_16lwqxj_di" bpmnElement="Flow_16lwqxj">
+        <di:waypoint x="1850" y="120" />
+        <di:waypoint x="1900" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14bgx7i_di" bpmnElement="Flow_14bgx7i">
+        <di:waypoint x="1690" y="120" />
+        <di:waypoint x="1750" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1a73t8d_di" bpmnElement="Flow_1a73t8d">
+        <di:waypoint x="1500" y="120" />
+        <di:waypoint x="1590" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mtd82v_di" bpmnElement="Flow_1mtd82v">
+        <di:waypoint x="2077" y="178" />
+        <di:waypoint x="2077" y="410" />
+        <di:waypoint x="1300" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1e9uehm_di" bpmnElement="Flow_1e9uehm">
+        <di:waypoint x="1609" y="178" />
+        <di:waypoint x="1609" y="410" />
+        <di:waypoint x="1300" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0k06xwh_di" bpmnElement="Flow_0k06xwh">
+        <di:waypoint x="1419" y="178" />
+        <di:waypoint x="1419" y="410" />
+        <di:waypoint x="1300" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ovblfa_di" bpmnElement="Flow_0ovblfa">
+        <di:waypoint x="1226" y="178" />
+        <di:waypoint x="1226" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1wnfu06_di" bpmnElement="Flow_1wnfu06">
+        <di:waypoint x="886" y="178" />
+        <di:waypoint x="886" y="410" />
+        <di:waypoint x="1200" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1i4ulyk_di" bpmnElement="Flow_1i4ulyk">
+        <di:waypoint x="318" y="178" />
+        <di:waypoint x="318" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10ub4mr_di" bpmnElement="Flow_10ub4mr">
+        <di:waypoint x="1250" y="450" />
+        <di:waypoint x="1250" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0uji23y_di" bpmnElement="Flow_0uji23y">
+        <di:waypoint x="379" y="370" />
+        <di:waypoint x="570" y="370" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_110ipm4_di" bpmnElement="SequenceFlow_110ipm4">
+        <di:waypoint x="620" y="410" />
+        <di:waypoint x="620" y="522" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_19yu142_di" bpmnElement="SequenceFlow_19yu142">
+        <di:waypoint x="1216" y="698" />
+        <di:waypoint x="1216" y="715" />
+        <di:waypoint x="1250" y="715" />
+        <di:waypoint x="1250" y="732" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1y8pio6_di" bpmnElement="SequenceFlow_1y8pio6">
+        <di:waypoint x="1250" y="680" />
+        <di:waypoint x="1250" y="732" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1tteaix_di" bpmnElement="SequenceFlow_1tteaix">
+        <di:waypoint x="1250" y="570" />
+        <di:waypoint x="1250" y="600" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0dr2osg_di" bpmnElement="SequenceFlow_0dr2osg">
+        <di:waypoint x="2150" y="120" />
+        <di:waypoint x="2212" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0q1gj5a_di" bpmnElement="SequenceFlow_0q1gj5a">
+        <di:waypoint x="2000" y="120" />
+        <di:waypoint x="2050" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1czbhzf_di" bpmnElement="SequenceFlow_1czbhzf">
+        <di:waypoint x="1304" y="120" />
+        <di:waypoint x="1400" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1f5aml8_di" bpmnElement="SequenceFlow_1f5aml8">
+        <di:waypoint x="938" y="120" />
+        <di:waypoint x="1204" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0onvbrq_di" bpmnElement="SequenceFlow_0onvbrq">
+        <di:waypoint x="192" y="120" />
+        <di:waypoint x="279" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_07q6qt2_di" bpmnElement="SequenceFlow_07q6qt2">
+        <di:waypoint x="670" y="120" />
+        <di:waypoint x="838" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0xa6e8i_di" bpmnElement="SequenceFlow_0xa6e8i">
+        <di:waypoint x="379" y="120" />
+        <di:waypoint x="570" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_Upgrade">
+        <dc:Bounds x="156" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="156" y="145" width="36" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1t5tavx_di" bpmnElement="Task_Upgrade_ValidateInput">
+        <dc:Bounds x="279" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0p4vj98_di" bpmnElement="Task_0mb4gy9">
+        <dc:Bounds x="1900" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0k0j8kj_di" bpmnElement="EndEvent_0k0j8kj">
+        <dc:Bounds x="2212" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2218" y="145" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0565t8l_di" bpmnElement="Task_Upgrade_LogFailure">
+        <dc:Bounds x="1200" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_16hisit_di" bpmnElement="EndEvent_Upgrade_Error">
+        <dc:Bounds x="1232" y="732" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1217" y="775" width="67" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_086sw0b_di" bpmnElement="CallActivity_086sw0b">
+        <dc:Bounds x="1590" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_19omvpb_di" bpmnElement="Task_Upgrade_CheckImagePullSecret">
+        <dc:Bounds x="838" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1p36x1s_di" bpmnElement="CallActivity_1p36x1s">
+        <dc:Bounds x="1204" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1b764wf_di" bpmnElement="CallActivity_1b764wf">
+        <dc:Bounds x="1400" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_03ikpxv_di" bpmnElement="Activity_Publish_Lifecycle_Message_End">
+        <dc:Bounds x="2050" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1nt68jd_di" bpmnElement="Activity_Publish_Lifecycle_Message_Error_End">
+        <dc:Bounds x="1200" y="600" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_158evta_di" bpmnElement="Script_Log_Failures">
+        <dc:Bounds x="570" y="330" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0f6q7sm_di" bpmnElement="Upgrade_Validation_Error_Event">
+        <dc:Bounds x="602" y="522" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="587" y="565" width="67" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_08b47un_di" bpmnElement="Task_RemoveTemporaryFilesOnSuccess">
+        <dc:Bounds x="1750" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1q8nxbl_di" bpmnElement="Task_RemoveTemporaryFilesOnValidationFailure">
+        <dc:Bounds x="279" y="330" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0zaqnwn_di" bpmnElement="Task_RemoveTemporaryFilesOnFailure">
+        <dc:Bounds x="1200" y="370" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_03ak1or_di" bpmnElement="ServiceTask_03ak1or">
+        <dc:Bounds x="570" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_054hop1_di" bpmnElement="BoundaryEvent_publish_lifecycle_message_error">
+        <dc:Bounds x="1198" y="662" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0jwmjte_di" bpmnElement="BoundaryEvent_publish_lifecycle_message">
+        <dc:Bounds x="2059" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0di0o9h_di" bpmnElement="BoundaryEvent_0zn213p">
+        <dc:Bounds x="1591" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0v16ec0_di" bpmnElement="BoundaryEvent_0e08qi5">
+        <dc:Bounds x="1401" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_14i6oj9_di" bpmnElement="BoundaryEvent_0oo73c5">
+        <dc:Bounds x="1208" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1c3uox7_di" bpmnElement="BoundaryEvent_Upgrade_CheckImagePullSecret">
+        <dc:Bounds x="868" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_15g289u_di" bpmnElement="BoundaryEvent_Upgrade_ValidateInput">
+        <dc:Bounds x="300" y="142" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

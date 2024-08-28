@@ -1,0 +1,43 @@
+{{!
+    COPYRIGHT Ericsson 2024
+
+
+
+    The copyright to the computer program(s) herein is the property of
+
+    Ericsson Inc. The programs may be used and/or copied only with written
+
+    permission from Ericsson Inc. or in accordance with the terms and
+
+    conditions stipulated in the agreement/contract under which the
+
+    program(s) have been supplied.
+}}
+{{!
+  The only fields that have been modified from original template is line 24, 30
+  Original file https://github.com/OpenAPITools/openapi-generator/blob/33e0c6775fb78ff65501c47ca6e8ddbf1388c5df/modules/openapi-generator/src/main/resources/JavaSpring/beanValidationCore.mustache
+}}
+{{#pattern}}{{^isByteArray}}@Pattern(regexp = "{{{pattern}}}"{{#vendorExtensions.x-pattern-message}}, message="{{vendorExtensions.x-pattern-message}}"{{/vendorExtensions.x-pattern-message}}) {{/isByteArray}}{{/pattern}}{{!
+minLength && maxLength set
+}}{{#minLength}}{{#maxLength}}@Size(min = {{minLength}}, max = {{maxLength}}) {{/maxLength}}{{/minLength}}{{!
+minLength set, maxLength not
+}}{{#minLength}}{{^maxLength}}@Size(min={{minLength}}{{#vendorExtensions.x-message}}, message="{{vendorExtensions.x-message}}"{{/vendorExtensions.x-message}}) {{/maxLength}}{{/minLength}}{{!
+minLength not set, maxLength set
+}}{{^minLength}}{{#maxLength}}@Size(max = {{.}}) {{/maxLength}}{{/minLength}}{{!
+@Size: minItems && maxItems set
+}}{{#minItems}}{{#maxItems}}@Size(min = {{minItems}}, max = {{maxItems}}) {{/maxItems}}{{/minItems}}{{!
+@Size: minItems set, maxItems not
+}}{{#minItems}}{{^maxItems}}@Size(min={{minItems}}{{#vendorExtensions.x-message}}, message="{{vendorExtensions.x-message}}"{{/vendorExtensions.x-message}}) {{/maxItems}}{{/minItems}}{{!
+@Size: minItems not set && maxItems set
+}}{{^minItems}}{{#maxItems}}@Size(max = {{.}}) {{/maxItems}}{{/minItems}}{{!
+@Email: useBeanValidation
+}}{{#isEmail}}{{#useBeanValidation}}@jakarta.validation.constraints.Email{{/useBeanValidation}}{{!
+@Email: performBeanValidation exclusive
+}}{{^useBeanValidation}}{{#performBeanValidation}}@org.hibernate.validator.constraints.Email{{/performBeanValidation}}{{/useBeanValidation}}{{/isEmail}}{{!
+check for integer or long / all others=decimal type with @Decimal*
+isInteger set
+}}{{#isInteger}}{{#minimum}}@Min({{.}}) {{/minimum}}{{#maximum}}@Max({{.}}) {{/maximum}}{{/isInteger}}{{!
+isLong set
+}}{{#isLong}}{{#minimum}}@Min({{.}}L) {{/minimum}}{{#maximum}}@Max({{.}}L) {{/maximum}}{{/isLong}}{{!
+Not Integer, not Long => we have a decimal value!
+}}{{^isInteger}}{{^isLong}}{{#minimum}}@DecimalMin({{#exclusiveMinimum}}value = {{/exclusiveMinimum}}"{{minimum}}"{{#exclusiveMinimum}}, inclusive = false{{/exclusiveMinimum}}) {{/minimum}}{{#maximum}}@DecimalMax({{#exclusiveMaximum}}value = {{/exclusiveMaximum}}"{{maximum}}"{{#exclusiveMaximum}}, inclusive = false{{/exclusiveMaximum}}) {{/maximum}}{{/isLong}}{{/isInteger}}

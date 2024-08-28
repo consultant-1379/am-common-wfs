@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1ilmz7d" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="2.2.4">
+  <bpmn:process id="subwf_execute_command" name="Helm Upgrade" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:startEvent id="StartEvent_1" name="START">
+      <bpmn:outgoing>SequenceFlow_00mvpv3</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_00mvpv3" sourceRef="StartEvent_1" targetRef="Task_1sqqepc" />
+    <bpmn:serviceTask id="Task_1sqqepc" name="Execute Command" camunda:delegateExpression="${executeCommand}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="commandOutput">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandOutput")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_00mvpv3</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_179aus6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_07rnbnu" name="END">
+      <bpmn:incoming>SequenceFlow_179aus6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_179aus6" sourceRef="Task_1sqqepc" targetRef="EndEvent_07rnbnu" />
+  </bpmn:process>
+  <bpmn:error id="Error_0k4zeez" name="Connection Failure" errorCode="error.common.connection.failure" />
+  <bpmn:error id="Error_1s12tqy" name="Upgrade Failed" errorCode="error.common.install.failure" />
+  <bpmn:error id="Error_0zhkk9g" name="Authenticate Error" errorCode="error.common.authentication.failure" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="subwf_execute_command">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="251" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="252" y="145" width="36" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_00mvpv3_di" bpmnElement="SequenceFlow_00mvpv3">
+        <di:waypoint x="287" y="120" />
+        <di:waypoint x="361" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_1cx1evi_di" bpmnElement="Task_1sqqepc">
+        <dc:Bounds x="361" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_07rnbnu_di" bpmnElement="EndEvent_07rnbnu">
+        <dc:Bounds x="542" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="548" y="145" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_179aus6_di" bpmnElement="SequenceFlow_179aus6">
+        <di:waypoint x="461" y="120" />
+        <di:waypoint x="542" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

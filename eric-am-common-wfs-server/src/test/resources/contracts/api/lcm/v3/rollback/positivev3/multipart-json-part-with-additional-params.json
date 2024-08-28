@@ -1,0 +1,9 @@
+{
+  "revisionNumber": "0",
+  "clusterName": "multiple-charts-failed",
+  "skipVerification": false,
+  "lifecycleOperationId": "c2921594-4b51-4969-b84a-ed5743633d99",
+  "state": "PROCESSING",
+  "skipJobVerification": false,
+  "namespace": "testrollback"
+}

@@ -1,0 +1,355 @@
+#
+# COPYRIGHT Ericsson 2024
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+{{/*
+Values for probes
+*/}}
+{{- $probesValue := fromJson (include "eric-am-common-wfs.probes" .) -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "eric-am-common-wfs.name" . }}
+  labels: {{- include "eric-am-common-wfs.labels.extended-defaults" . | nindent 4 }}
+  annotations: {{- include "eric-am-common-wfs.annotations" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: {{ .Values.updateStrategy.type | quote }}
+  {{- if and (eq .Values.updateStrategy.type "RollingUpdate") .Values.updateStrategy.rollingUpdate }}
+    rollingUpdate:
+      maxUnavailable: {{ .Values.updateStrategy.rollingUpdate.maxUnavailable }}
+      maxSurge: {{ .Values.updateStrategy.rollingUpdate.maxSurge }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ template "eric-am-common-wfs.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        {{- $commonLabels := include "eric-am-common-wfs.labels.extended-defaults" . | fromYaml }}
+        {{- include "eric-eo-evnfm-library-chart.mergeLabels" (dict "location" .Template.Name "sources" (list
+            $commonLabels)) | trim | nindent 8 }}
+      annotations:
+        {{- $commonAnnotations := include "eric-am-common-wfs.annotations" . | fromYaml }}
+        {{- $serviceMesh := include "eric-am-common-wfs.service-mesh-inject" . | fromYaml }}
+        {{- $serviceMeshVersion := include "eric-am-common-wfs.service-mesh-version" . | fromYaml }}
+        {{- $serviceMeshLogs := include "eric-am-common-wfs.service-mesh-logs" . | fromYaml }}
+        {{- $serviceMeshExcludeOutboundPort := include "eric-am-common-wfs.excludeOutboundPorts" . | fromYaml }}
+        {{- include "eric-eo-evnfm-library-chart.mergeAnnotations" (dict "location" .Template.Name "sources" (list $commonAnnotations
+            $serviceMesh $serviceMeshVersion $serviceMeshLogs $serviceMeshExcludeOutboundPort)) | trim | nindent 8 }}
+    spec:
+      securityContext:
+        fsGroup: {{ include "eric-am-common-wfs.fsGroup" . }}
+      affinity:
+        podAntiAffinity:
+      {{- if eq .Values.affinity.podAntiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+      {{- else if eq .Values.affinity.podAntiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+      {{- end }}
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{ template "eric-am-common-wfs.name" . }}
+              topologyKey: {{ .Values.affinity.topologyKey }}
+      {{- if include "eric-am-common-wfs.pullSecrets" . }}
+      imagePullSecrets:
+        - name: {{ template "eric-am-common-wfs.pullSecrets" . }}
+      {{- end }}
+      serviceAccountName: {{ template "eric-am-common-wfs.service-account.name" . }}
+      automountServiceAccountToken: true
+      {{- if include "eric-am-common-wfs.podPriority" . }}
+      priorityClassName: {{- include "eric-am-common-wfs.podPriority" . | indent 2 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ template "eric-am-common-wfs.mainImagePath" . }}
+          imagePullPolicy: {{ template "eric-am-common-wfs.imagePullPolicy" . }}
+          lifecycle:
+            preStop:
+              exec:
+                command: [ "curl", "-XPOST", "localhost:8888/actuator/shutdown" ]
+          ports:
+            - name: http
+              containerPort: {{ .Values.container.ports.http }}
+              protocol: TCP
+          env:
+            - name: "HELM_URL"
+              value: {{ .Values.helm.url }}
+            - name: "HELM_REPOSITORY"
+              value: {{ .Values.helm.repository }}
+            - name: "HELM_REPOSITORY_NAME"
+              value: {{ .Values.helm.repositoryName }}
+            - name: "HELM_DEBUG_ENABLED"
+              value: "{{ .Values.helm.debug.enabled }}"
+            - name: "XDG_CACHE_HOME"
+              value: "/tmp/cache"
+            - name: "SPRING_DATASOURCE_URL"
+              value: "jdbc:postgresql://{{ .Values.database.service }}.{{ .Release.Namespace }}:{{ index .Values "database" "port" }}/{{ index .Values "database" "schema" }}"
+            - name: "SPRING_DATASOURCE_USERNAME"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresCredentials.secret }}
+                  key: pguserid
+            - name: "SPRING_DATASOURCE_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresCredentials.secret }}
+                  key: pgpasswd
+            - name: "autoConfigureDocker.enabled"
+              value: "{{ .Values.autoConfigureDocker.enabled }}"
+      {{- if index .Values "autoConfigureDocker" "enabled"}}
+            - name: "docker.registry.url"
+              valueFrom:
+                secretKeyRef:
+                  name: {{- if .Values.dockerRegistry.secret }} {{ .Values.dockerRegistry.secret }} {{else}} eric-lcm-container-registry-registry {{end}}
+                  key: url
+            - name: "docker.registry.username"
+              valueFrom:
+                secretKeyRef:
+                  name: {{- if .Values.dockerRegistry.secret }} {{ .Values.dockerRegistry.secret }} {{else}} {{ .Values.userSecret }} {{end}}
+                  key: userid
+            - name: "docker.registry.password"
+              valueFrom:
+                secretKeyRef:
+                  name: {{- if .Values.dockerRegistry.secret }} {{ .Values.dockerRegistry.secret }} {{else}} {{ .Values.userSecret }} {{end}}
+                  key: userpasswd
+            - name: "containerRegistry.global.registry.pullSecret"
+              value: {{ .Values.containerRegistry.global.registry.pullSecret }}
+      {{ end }}
+            - name: TZ
+              value : {{ .Values.global.timezone }}
+            - name: SERVICE_ID
+              value: "eric-eo-evnfm-wfs"
+{{ include "eric-am-common-wfs.db.connection.pool.max.lifetime" . | indent 12 }}
+            - name: "evnfm.namespace"
+              value: {{ .Release.Namespace }}
+            - name: "KUBERNETES_WFS_MASTER"
+              value: {{ .Values.kubernetes.host }}
+            - name: "CRYPTO_HOST"
+              value: "http://eric-eo-evnfm-crypto.{{ .Release.Namespace }}"
+            - name: "CAMUNDA_HISTORY_TIME_TO_LIVE"
+              value: {{ .Values.camunda.historyTimeToLive | quote }}
+            - name: "CAMUNDA_HISTORY_LEVEL"
+              value: {{ include "eric-am-common-wfs.camunda.bpm.historyLevel" . }}
+            - name: "HEALTH_TIMEOUT_READ"
+              value: {{ .Values.health.timeout.read | quote }}
+            - name: "HEALTH_TIMEOUT_CONNECTION"
+              value: {{ .Values.health.timeout.connection  | quote}}
+            - name: "TX_RETRY_ATTEMPTS"
+              value: {{ .Values.txRetry.attempts | quote }}
+            - name: "TX_RETRY_DELAY_IN_SECONDS"
+              value: {{ .Values.txRetry.delayInSeconds | quote }}
+
+            {{- if .Values.global.logging }}
+            {{- if .Values.global.logging.enabled }}
+            - name: LOG_STREAMINGMETHOD
+              value: {{ include "eric-am-common-wfs.log.streamingMethod" . }}
+            {{- if or (eq (include "eric-am-common-wfs.log.streamingMethod" . ) "dual") (eq (include "eric-am-common-wfs.log.streamingMethod" . ) "direct") }}
+            - name: LOGSTASH_HOST
+              value: "{{ .Values.logging.logstash.host }}"
+            - name: LOGSTASH_PORT
+              value: "{{ .Values.logging.logstash.port }}"
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            - name: APPLY_DEPRECATED_DESIGN_RULES
+              value: {{ .Values.applyDeprecatedDesignRules | quote }}
+            - name: SPRING_DATA_REDIS_HOST
+              value: {{ .Values.redis.host }}
+            - name: SPRING_DATA_REDIS_PORT
+              value: {{ include "eric-am-common-wfs.redis.port" . | quote }}
+            - name: REDIS_ACL_ENABLED
+              value: {{ .Values.redis.acl.enabled | quote }}
+            {{- if .Values.redis.acl.enabled }}
+            - name: SPRING_DATA_REDIS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "eric-am-common-wfs.redis.acl.secretname" . | quote }}
+                  key: {{ .Values.redis.acl.userKey | quote }}
+            - name: SPRING_DATA_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "eric-am-common-wfs.redis.acl.secretname" . | quote }}
+                  key: {{ .Values.redis.acl.passKey | quote }}
+            - name: HELM_JOBS_LIMIT
+              value: "{{ .Values.maxJobsAllowed }}"
+            {{- end }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - all
+            allowPrivilegeEscalation: false
+            privileged: false
+            runAsNonRoot: true
+            runAsGroup: 291171
+          volumeMounts:
+            - name: create-cacert-volume
+              mountPath: /run/secrets/ssl/certs/
+            - name: wfs-main
+              mountPath: /etc/ssl/certs/
+            - name: tmp-data
+              mountPath: /tmp
+              readOnly: false
+            - name: helm-logs-volume
+              mountPath: /tmp/helm-logs/
+            - name: wfs-data
+              mountPath: /wfs
+            - name: helm-executor-job-template
+              mountPath: /mnt/helm-executor-job-template/
+          resources:
+            requests:
+          {{- if .Values.resources.commonwfs.requests.cpu }}
+              cpu: {{ .Values.resources.commonwfs.requests.cpu | quote }}
+          {{- end }}
+          {{- if .Values.resources.commonwfs.requests.memory }}
+              memory: {{ .Values.resources.commonwfs.requests.memory | quote }}
+          {{- end }}
+          {{- if index .Values.resources.commonwfs.requests "ephemeral-storage" }}
+              ephemeral-storage: {{ index .Values.resources.commonwfs.requests "ephemeral-storage" | quote }}
+          {{- end }}
+            limits:
+          {{- if .Values.resources.commonwfs.limits.cpu }}
+              cpu: {{ .Values.resources.commonwfs.limits.cpu | quote }}
+          {{- end }}
+          {{- if .Values.resources.commonwfs.limits.memory }}
+              memory: {{ .Values.resources.commonwfs.limits.memory | quote }}
+          {{- end }}
+          {{- if index .Values.resources.commonwfs.limits "ephemeral-storage" }}
+              ephemeral-storage: {{ index .Values.resources.commonwfs.limits "ephemeral-storage" | quote }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ .Values.container.ports.http }}
+            # setting initial delay to match readiness probe timeout
+            # discussions ongoing about a better way to do this on github
+            # /kubernetes/kubernetes/issues/27114
+            initialDelaySeconds: {{ $probesValue.commonwfs.livenessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ $probesValue.commonwfs.livenessProbe.timeoutSeconds }}
+            periodSeconds: {{ $probesValue.commonwfs.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ .Values.container.ports.http }}
+            initialDelaySeconds: {{ $probesValue.commonwfs.readinessProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ $probesValue.commonwfs.readinessProbe.timeoutSeconds }}
+            periodSeconds: {{ $probesValue.commonwfs.readinessProbe.periodSeconds }}
+            failureThreshold: {{ $probesValue.commonwfs.readinessProbe.failureThreshold }}
+      volumes:
+        - name: create-cacert-volume
+          secret:
+            secretName: {{ .Values.iam.cacert.secretName }}
+            items:
+              - key: {{ .Values.iam.cacert.key }}
+                path: {{ .Values.iam.cacert.filePath }}
+        - name: tmp-data
+          emptyDir: {}
+        - name: helm-logs-volume
+          emptyDir: {}
+        - name: wfs-data
+          emptyDir: {}
+        - name: wfs-main
+          emptyDir: {}
+        - name: helm-executor-job-template
+          configMap:
+            name: eric-am-common-wfs-helm-executor-job-config
+      initContainers:
+        - name: create-db-schema
+          image: {{ template "eric-am-common-wfs.pgInitContainerPath" . }}
+          imagePullPolicy: {{ template "eric-am-common-wfs.create-db-schema.imagePullPolicy" . }}
+          env:
+            - name: "POSTGRES_HOST"
+              value: "{{ .Values.database.service }}.{{ .Release.Namespace }}"
+            - name: "POSTGRES_USER"
+              value: "postgres"
+            - name: "PGPASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresCredentials.secret }}
+                  key: pgpasswd
+            - name: "PG_APP_USER"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresCredentials.secret }}
+                  key: pguserid
+            - name: "POSTGRES_DB"
+              value: {{ .Values.database.schema | quote }}
+            - name: "POSTGRES_PORT"
+              value: {{ .Values.database.port | quote }}
+            - name: "STARTUP_WAIT"
+              value: {{ .Values.database.creationTime | quote }}
+            - name: "CAMUNDA_HISTORY_LEVEL"
+              value: {{ include "eric-am-common-wfs.camunda.bpm.historyLevel" . }}
+            - name: TZ
+              value: {{ .Values.global.timezone }}
+          resources:
+            requests:
+            {{- if .Values.resources.commonwfsInit.requests.cpu }}
+              cpu: {{ .Values.resources.commonwfsInit.requests.cpu | quote }}
+            {{- end }}
+            {{- if .Values.resources.commonwfsInit.requests.memory }}
+              memory: {{ .Values.resources.commonwfsInit.requests.memory | quote }}
+            {{- end }}
+            {{- if index .Values.resources.commonwfsInit.requests "ephemeral-storage" }}
+              ephemeral-storage: {{ index .Values.resources.commonwfsInit.requests "ephemeral-storage" | quote }}
+            {{- end }}
+            limits:
+            {{- if .Values.resources.commonwfsInit.limits.cpu }}
+              cpu: {{ .Values.resources.commonwfsInit.limits.cpu | quote }}
+            {{- end }}
+            {{- if .Values.resources.commonwfsInit.limits.memory }}
+              memory: {{ .Values.resources.commonwfsInit.limits.memory | quote }}
+            {{- end }}
+            {{- if index .Values.resources.commonwfsInit.limits "ephemeral-storage" }}
+              ephemeral-storage: {{ index .Values.resources.commonwfsInit.limits "ephemeral-storage" | quote }}
+            {{- end }}
+          securityContext:
+            capabilities:
+              drop:
+                - all
+            allowPrivilegeEscalation: false
+            privileged: false
+            runAsNonRoot: true
+            runAsGroup: 113992
+      {{- if or .Values.nodeSelector (and .Values.global .Values.global.nodeSelector) }}
+      nodeSelector: {{- include "eric-am-common-wfs.nodeSelector" . | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.tolerations (and .Values.global .Values.global.tolerations) }}
+      tolerations: {{ include "eric-am-common-wfs.tolerations.commonwfs" . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds.commonwfs | int }}
+      {{- end }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+      {{- range $constraints := .Values.topologySpreadConstraints }}
+        - maxSkew: {{ $constraints.maxSkew }}
+          topologyKey: {{ $constraints.topologyKey }}
+          whenUnsatisfiable: {{ $constraints.whenUnsatisfiable }}
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: {{ template "eric-am-common-wfs.name" . }}
+              app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      {{- end }}
+      {{- end }}

@@ -1,0 +1,12 @@
+{
+  "namespace": "eric-crd-ns",
+  "chartUrl": "https://arm.epk.ericsson.se/artifactory/proj-am-helm-local/acceptance-test/eric-certm-5.3.1.tgz",
+  "additionalParams": {},
+  "day0Configuration": {},
+  "skipVerification": false,
+  "overrideGlobalRegistry": true,
+  "lifecycleOperationId": "89883055-as49-4c24-8796-6e5afa2535g1",
+  "state": "PROCESSING",
+  "skipJobVerification": false,
+  "chartType": "CRD"
+}

@@ -1,0 +1,210 @@
+{
+  "apiVersion": "v1",
+  "items": [
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "annotations": {
+          "deployment.kubernetes.io/revision": "1",
+          "meta.helm.sh/release-name": "zkulrus-test-2",
+          "meta.helm.sh/release-namespace": "zkulrus-test"
+        },
+        "creationTimestamp": "2023-05-15T06:47:36Z",
+        "generation": 1,
+        "labels": {
+          "app": "eric-adp-gs-testapp",
+          "app.kubernetes.io/instance": "zkulrus-test-2",
+          "app.kubernetes.io/managed-by": "Helm"
+        },
+        "name": "eric-adp-gs-testapp",
+        "namespace": "zkulrus-test",
+        "resourceVersion": "59712332",
+        "uid": "284c638b-e1b1-4cdd-a348-0b8c1be54af8"
+      },
+      "spec": {
+        "progressDeadlineSeconds": 600,
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "service": "eric-adp-gs-testapp"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxSurge": "25%",
+            "maxUnavailable": "25%"
+          },
+          "type": "RollingUpdate"
+        },
+        "template": null
+      },
+      "status": {
+        "availableReplicas": 1,
+        "conditions": [
+          {
+            "lastTransitionTime": "2023-05-15T06:48:07Z",
+            "lastUpdateTime": "2023-05-15T06:48:07Z",
+            "message": "Deployment has minimum availability.",
+            "reason": "MinimumReplicasAvailable",
+            "status": "True",
+            "type": "Available"
+          },
+          {
+            "lastTransitionTime": "2023-05-15T06:47:36Z",
+            "lastUpdateTime": "2023-05-15T06:48:07Z",
+            "message": "ReplicaSet \"eric-adp-gs-testapp-66859ff868\" has successfully progressed.",
+            "reason": "NewReplicaSetAvailable",
+            "status": "True",
+            "type": "Progressing"
+          }
+        ],
+        "observedGeneration": 1,
+        "readyReplicas": 1,
+        "replicas": 1,
+        "updatedReplicas": 1
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "annotations": {
+          "deployment.kubernetes.io/revision": "1",
+          "ericsson.com/product-name": "ADP CICD PM Testapp Controller",
+          "ericsson.com/product-number": "CAV 101 XXX/X",
+          "ericsson.com/product-revision": "R1A",
+          "meta.helm.sh/release-name": "zkulrus-test-2",
+          "meta.helm.sh/release-namespace": "zkulrus-test"
+        },
+        "creationTimestamp": "2023-05-15T06:47:36Z",
+        "generation": 1,
+        "labels": {
+          "app.kubernetes.io/instance": "zkulrus-test-2",
+          "app.kubernetes.io/managed-by": "Helm",
+          "app.kubernetes.io/name": "eric-pm-testapp-controller",
+          "app.kubernetes.io/version": "0.4.0-13"
+        },
+        "name": "eric-pm-testapp-controller",
+        "namespace": "zkulrus-test",
+        "resourceVersion": "59710432",
+        "uid": "d29be25c-3e3e-443f-ae25-ce52c6b4e764"
+      },
+      "spec": {
+        "progressDeadlineSeconds": 600,
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "app.kubernetes.io/instance": "zkulrus-test-2",
+            "app.kubernetes.io/name": "eric-pm-testapp-controller"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxSurge": 1,
+            "maxUnavailable": 0
+          },
+          "type": "RollingUpdate"
+        },
+        "template": null
+      },
+      "status": {
+        "availableReplicas": 1,
+        "conditions": [
+          {
+            "lastTransitionTime": "2023-05-15T06:47:39Z",
+            "lastUpdateTime": "2023-05-15T06:47:39Z",
+            "message": "Deployment has minimum availability.",
+            "reason": "MinimumReplicasAvailable",
+            "status": "True",
+            "type": "Available"
+          },
+          {
+            "lastTransitionTime": "2023-05-15T06:47:36Z",
+            "lastUpdateTime": "2023-05-15T06:47:39Z",
+            "message": "ReplicaSet \"eric-pm-testapp-controller-76b8466775\" has successfully progressed.",
+            "reason": "NewReplicaSetAvailable",
+            "status": "True",
+            "type": "Progressing"
+          }
+        ],
+        "observedGeneration": 1,
+        "readyReplicas": 1,
+        "replicas": 1,
+        "updatedReplicas": 1
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "annotations": {
+          "deployment.kubernetes.io/revision": "1",
+          "meta.helm.sh/release-name": "zkulrus-test-2",
+          "meta.helm.sh/release-namespace": "zkulrus-test"
+        },
+        "creationTimestamp": "2023-05-15T06:47:36Z",
+        "generation": 1,
+        "labels": {
+          "app.kubernetes.io/instance": "zkulrus-test-2",
+          "app.kubernetes.io/managed-by": "Helm",
+          "service": "influxdb-service"
+        },
+        "name": "influxdb-service",
+        "namespace": "zkulrus-test",
+        "resourceVersion": "59710341",
+        "uid": "8c6afaa5-bf8e-41e9-a1ba-4e9bd500cd04"
+      },
+      "spec": {
+        "progressDeadlineSeconds": 600,
+        "replicas": 1,
+        "revisionHistoryLimit": 10,
+        "selector": {
+          "matchLabels": {
+            "service": "influxdb-service"
+          }
+        },
+        "strategy": {
+          "rollingUpdate": {
+            "maxSurge": "25%",
+            "maxUnavailable": "25%"
+          },
+          "type": "RollingUpdate"
+        },
+        "template": null
+      },
+      "status": {
+        "availableReplicas": 1,
+        "conditions": [
+          {
+            "lastTransitionTime": "2023-05-15T06:47:38Z",
+            "lastUpdateTime": "2023-05-15T06:47:38Z",
+            "message": "Deployment has minimum availability.",
+            "reason": "MinimumReplicasAvailable",
+            "status": "True",
+            "type": "Available"
+          },
+          {
+            "lastTransitionTime": "2023-05-15T06:47:36Z",
+            "lastUpdateTime": "2023-05-15T06:47:38Z",
+            "message": "ReplicaSet \"influxdb-service-6dc794fdff\" has successfully progressed.",
+            "reason": "NewReplicaSetAvailable",
+            "status": "True",
+            "type": "Progressing"
+          }
+        ],
+        "observedGeneration": 1,
+        "readyReplicas": 1,
+        "replicas": 1,
+        "updatedReplicas": 1
+      }
+    }
+  ],
+  "kind": "List",
+  "metadata": {
+    "resourceVersion": "",
+    "selfLink": ""
+  }
+}

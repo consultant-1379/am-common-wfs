@@ -1,0 +1,40 @@
+#
+# COPYRIGHT Ericsson 2024
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+productName: EVNFM WFS Service
+productNumber: CXD 101 0744
+images:
+  commonWfs:
+    productName: EVNFM WFS Service
+    productNumber: CXU 101 0680
+    registry: armdocker.rnd.ericsson.se
+    repoPath: proj-am/snapshots
+    name: eric-am-common-wfs
+    tag: VERSION
+  pgInitContainer:
+    productName: Document Database PG
+    productNumber: CXC 201 1395/5
+    registry: armdocker.rnd.ericsson.se
+    repoPath: proj-am/snapshots
+    name: eric-am-common-wfs-pg
+    tag: VERSION
+  helmExecutor:
+    productName: EVNFM Helm Executor
+    productNumber: TBD
+    registry: armdocker.rnd.ericsson.se
+    repoPath: proj-am/releases
+    name: eric-eo-vnfm-helm-executor
+    tag: 0.16.0-1

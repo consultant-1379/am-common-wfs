@@ -1,0 +1,8 @@
+{
+  "escaped-1": "test \"",
+  "escaped-2": "test \\",
+  "escaped-3": "/bin/sh -f \n set -x",
+  "escaped-4": "withquote\"value",
+  "escaped-5": "169.254.0.0/16",
+  "escaped-6": "Developer's Guide's"
+}

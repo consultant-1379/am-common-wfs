@@ -1,0 +1,8 @@
+{
+  "errorDetails": [
+    {
+      "parameterName": "namespace",
+      "message": "Required request parameter 'namespace' for method parameter type String is not present"
+    }
+  ]
+}

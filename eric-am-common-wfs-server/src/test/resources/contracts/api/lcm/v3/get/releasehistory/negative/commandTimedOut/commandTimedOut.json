@@ -1,0 +1,23 @@
+{
+  "workflowQueries":[
+    {
+      "instanceId":"a4233dd0-cd63-11e9-9fd9-4615cf3f00bd",
+      "definitionKey":"InstantiateApplication__top",
+      "chartName":"stable/mysql",
+      "chartUrl":null,
+      "chartVersion":"0.13.0",
+      "releaseName":"release-cmdtimeout",
+      "namespace":"default",
+      "userId":"UNKNOWN",
+      "workflowState":"FAILED",
+      "message":"{\"detail\":\"Unable to get the result in the time specified\",\"status\":\"422\"}",
+      "startTime":"1551890124328",
+      "additionalParams":null,
+      "revision":null,
+      "revisionDescription":null
+    }
+  ],
+  "metadata":{
+    "count":1
+  }
+}

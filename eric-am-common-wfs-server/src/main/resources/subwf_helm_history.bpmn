@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1gifqba" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="2.2.4">
+  <bpmn:process id="subwf_helm_history" name="helmHistory" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:startEvent id="StartEvent_1vumqva" name="START">
+      <bpmn:outgoing>SequenceFlow_06jjhz6</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:endEvent id="EndEvent_0il0b33" name="END">
+      <bpmn:incoming>SequenceFlow_09e5png</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_13yevct" name="Incorrect Release / Revision&#10;&#10;">
+      <bpmn:incoming>SequenceFlow_1ie2795</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1f3cccs" errorRef="Error_19kg48a" />
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="ServiceTask_1djqx9n" name="Extract Revision number and state " camunda:delegateExpression="${parseHistoryOutput}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="commandOutput">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandOutput")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="revisionNumber">
+            <camunda:script scriptFormat="groovy">execution.getVariable("revisionNumber")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="commandExitStatus">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandExitStatus")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:outputParameter name="revisionNumber">
+            <camunda:script scriptFormat="groovy">execution.getVariable("revisionNumber");</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="revisionStatus">
+            <camunda:script scriptFormat="groovy">execution.getVariable("revisionStatus");</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion");</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1lo1wii</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_09e5png</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:scriptTask id="ScriptTask_0thn1hz" name="Log Error Message&#10;&#10;">
+      <bpmn:incoming>SequenceFlow_0p0jpr8</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_19nmtbx</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1ie2795</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.HistoryFailed");
+String errorOutput="";
+
+if((execution.getVariable("revisionStatus")!=null) &amp;&amp; (execution.getVariable("revisionStatus")!="SUPERSEDED")){
+errorOutput="Revision in Incorrect State";}
+
+else{
+errorOutput = (String) execution.getVariable("errorMessage");
+}
+if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+    execution.setVariable("message",errorOutput);
+} else {
+    execution.setVariable("message","unknown exception occured");
+}
+logger.error("Failed to get history for application due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_06jjhz6" sourceRef="StartEvent_1vumqva" targetRef="ServiceTask_0eqw81e" />
+    <bpmn:sequenceFlow id="SequenceFlow_1ie2795" sourceRef="ScriptTask_0thn1hz" targetRef="EndEvent_13yevct" />
+    <bpmn:boundaryEvent id="BoundaryEvent_0jddtfo" attachedToRef="ServiceTask_1djqx9n">
+      <bpmn:outgoing>SequenceFlow_0p0jpr8</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0p0jpr8" sourceRef="BoundaryEvent_0jddtfo" targetRef="ScriptTask_0thn1hz" />
+    <bpmn:sequenceFlow id="SequenceFlow_09e5png" sourceRef="ServiceTask_1djqx9n" targetRef="EndEvent_0il0b33" />
+    <bpmn:sequenceFlow id="SequenceFlow_1lo1wii" sourceRef="ServiceTask_15ra1ek" targetRef="ServiceTask_1djqx9n" />
+    <bpmn:boundaryEvent id="BoundaryEvent_1x5tay0" attachedToRef="ServiceTask_15ra1ek">
+      <bpmn:outgoing>SequenceFlow_19nmtbx</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_19nmtbx" sourceRef="BoundaryEvent_1x5tay0" targetRef="ScriptTask_0thn1hz" />
+    <bpmn:serviceTask id="ServiceTask_0eqw81e" name="Create Release History Command" camunda:delegateExpression="${createHelmCommand}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="type">
+            <camunda:script scriptFormat="groovy">execution.setVariable("commandType", "history")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:outputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="command">
+            <camunda:script scriptFormat="groovy">execution.getVariable("command")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="commandOutput">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandOutput")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_06jjhz6</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0voq7x6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="ServiceTask_15ra1ek" name="Execute Release History Command" calledElement="subwf_execute_command">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="type">
+            <camunda:script scriptFormat="groovy">execution.setVariable("commandType", "history")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:outputParameter name="command">
+            <camunda:script scriptFormat="groovy">execution.getVariable("command")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="commandOutput">
+            <camunda:script scriptFormat="groovy">execution.getVariable("commandOutput")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0voq7x6</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1lo1wii</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="SequenceFlow_0voq7x6" sourceRef="ServiceTask_0eqw81e" targetRef="ServiceTask_15ra1ek" />
+  </bpmn:process>
+  <bpmn:error id="Error_1fflpl7" name="Error_0do9gij" />
+  <bpmn:error id="Error_1vngeli" name="IncorrectRevision" errorCode="error.com.history.failure" />
+  <bpmn:error id="Error_19kg48a" name="HistoryFailure" errorCode="error.com.history.failure" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="subwf_helm_history">
+      <bpmndi:BPMNShape id="StartEvent_1vumqva_di" bpmnElement="StartEvent_1vumqva">
+        <dc:Bounds x="30" y="171" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="31" y="214" width="36" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0il0b33_di" bpmnElement="EndEvent_0il0b33">
+        <dc:Bounds x="713" y="171" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="719" y="214" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_13yevct_di" bpmnElement="EndEvent_13yevct">
+        <dc:Bounds x="424" y="435" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="407" y="478" width="88" height="53" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1djqx9n_di" bpmnElement="ServiceTask_1djqx9n">
+        <dc:Bounds x="548" y="149" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0thn1hz_di" bpmnElement="ScriptTask_0thn1hz">
+        <dc:Bounds x="392" y="302" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_06jjhz6_di" bpmnElement="SequenceFlow_06jjhz6">
+        <di:waypoint x="66" y="189" />
+        <di:waypoint x="159" y="189" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1ie2795_di" bpmnElement="SequenceFlow_1ie2795">
+        <di:waypoint x="442" y="382" />
+        <di:waypoint x="442" y="435" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BoundaryEvent_1k83aid_di" bpmnElement="BoundaryEvent_0jddtfo">
+        <dc:Bounds x="613" y="211" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0p0jpr8_di" bpmnElement="SequenceFlow_0p0jpr8">
+        <di:waypoint x="631" y="247" />
+        <di:waypoint x="631" y="342" />
+        <di:waypoint x="492" y="342" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_09e5png_di" bpmnElement="SequenceFlow_09e5png">
+        <di:waypoint x="648" y="189" />
+        <di:waypoint x="713" y="189" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1lo1wii_di" bpmnElement="SequenceFlow_1lo1wii">
+        <di:waypoint x="452" y="189" />
+        <di:waypoint x="548" y="189" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="BoundaryEvent_1cl21xb_di" bpmnElement="BoundaryEvent_1x5tay0">
+        <dc:Bounds x="416" y="211" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_19nmtbx_di" bpmnElement="SequenceFlow_19nmtbx">
+        <di:waypoint x="434" y="247" />
+        <di:waypoint x="434" y="342" />
+        <di:waypoint x="434" y="302" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_0eqw81e_di" bpmnElement="ServiceTask_0eqw81e">
+        <dc:Bounds x="159" y="149" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_09rdxsc_di" bpmnElement="ServiceTask_15ra1ek">
+        <dc:Bounds x="352" y="149" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0voq7x6_di" bpmnElement="SequenceFlow_0voq7x6">
+        <di:waypoint x="259" y="189" />
+        <di:waypoint x="352" y="189" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

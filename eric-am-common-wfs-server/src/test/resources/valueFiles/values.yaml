@@ -1,0 +1,33 @@
+# Default values for eric-am-common-wfs.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+global:
+  registry:
+    url: armdocker.rnd.ericsson.se
+#    pullSecret:
+
+# enable autoconfigure for helm and docker registries
+autoConfigureHelm:
+  enabled: false
+autoConfigureDocker:
+  enabled: false
+
+imageCredentials:
+  repoPath: proj-am/snapshots
+  pullPolicy: IfNotPresent
+#  registry:
+#    url:
+#    pullSecret:
+
+images:
+  eric-am-common-wfs:
+    name: eric-am-common-wfs
+    tag: 1.0.6-SNAPSHOT-44bb7d2

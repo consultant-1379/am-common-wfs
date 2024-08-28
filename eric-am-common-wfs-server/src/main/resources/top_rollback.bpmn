@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_10szusb" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.4.0">
+  <bpmn:process id="RollbackApplication__top" name="Rollback Application" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:startEvent id="StartRollback_Event" name="START">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="releaseName" label="releaseName" type="string" />
+          <camunda:formField id="revisionNumber" label="revisionNumber" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>SequenceFlow_07sryf8</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Rollback_ValidateInput" name="RollbackValidation" camunda:delegateExpression="${rollbackValidationTask}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="releaseName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("releaseName")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="revisionNumber">
+            <camunda:script scriptFormat="Groovy">execution.getVariable("revisionNumber")</camunda:script>
+          </camunda:inputParameter>
+          <camunda:inputParameter name="clusterName">
+            <camunda:script scriptFormat="groovy">execution.getVariable("clusterName")</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_07sryf8</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1bb81y2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:callActivity id="CallActivity_1fl40g2" name="Rollback Release to Specified Revision" camunda:asyncBefore="true" camunda:asyncAfter="true"
+     calledElement="subwf_helm_command">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="type">
+            <camunda:script scriptFormat="groovy">execution.setVariable("commandType", "rollback")</camunda:script>
+          </camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1jbho7s</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_11oovkv</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1wbk5zn</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:scriptTask id="ScriptTask_0kc4koo" name="Set Workflow Status" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0eoaccs</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1vmp92t</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.RollbackSuccess");
+String verifyOutput = (String) execution.getVariable("verifyAppResult");
+execution.setVariable("message",verifyOutput);
+logger.info(execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:endEvent id="EndEvent_0w4jhgu" name="END">
+      <bpmn:incoming>SequenceFlow_152hsl4</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:scriptTask id="ScriptTask_04qdr4v" name="Log Rollback Failure" scriptFormat="groovy">
+      <bpmn:incoming>Flow_1m3sh20</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0i0j33l</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.RollbackFailed");
+String errorOutput = (String) execution.getVariable("errorMessage");
+if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+    execution.setVariable("message",errorOutput);
+} else {
+    execution.setVariable("message","unknown exception occured");
+}
+logger.error("Failed to rollback application due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:endEvent id="EndEvent_0b4mknz" name="ERROR END">
+      <bpmn:incoming>SequenceFlow_15mp5w9</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_0cpz4e8</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1jr74u1" errorRef="Error_16s1vgr" />
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="BoundaryEvent_1y3p5nc" attachedToRef="CallActivity_1fl40g2">
+      <bpmn:outgoing>Flow_1mr5oaz</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0hpqg4q" />
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="BoundaryEvent_Rollback_Validation" attachedToRef="Task_Rollback_ValidateInput">
+      <bpmn:outgoing>Flow_1e6gfsj</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0j5qnwr" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_07sryf8" sourceRef="StartRollback_Event" targetRef="Task_Rollback_ValidateInput" />
+    <bpmn:callActivity id="CallActivity_22222" name="Validate Revision State" camunda:asyncBefore="true" camunda:asyncAfter="true" calledElement="subwf_helm_history">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:outputParameter name="revisionNumber">
+            <camunda:script scriptFormat="groovy">execution.getVariable("revisionNumber")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="revisionStatus">
+            <camunda:script scriptFormat="groovy">execution.getVariable("revisionStatus")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="chartVersion">
+            <camunda:script scriptFormat="groovy">execution.getVariable("chartVersion")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1cwokxv</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1jbho7s</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_04odvte" attachedToRef="CallActivity_22222">
+      <bpmn:outgoing>Flow_113r1ny</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0qhvpq9" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1jbho7s" sourceRef="CallActivity_22222" targetRef="CallActivity_1fl40g2" />
+    <bpmn:callActivity id="CallActivity_17kw5wz" name="Set revision and description" camunda:asyncBefore="true" camunda:asyncAfter="true"
+    calledElement="subwf_helm_history">
+      <bpmn:extensionElements>
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:inputOutput>
+          <camunda:inputParameter name="lastHistory">true</camunda:inputParameter>
+          <camunda:outputParameter name="revision">
+            <camunda:script scriptFormat="groovy">execution.getVariable("revision")</camunda:script>
+          </camunda:outputParameter>
+          <camunda:outputParameter name="description">
+            <camunda:script scriptFormat="groovy">execution.getVariable("description")</camunda:script>
+          </camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_10r9p69</bpmn:incoming>
+      <bpmn:outgoing>Flow_0q4lo0m</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="CallActivity_1vyy1kx" name="Verify Rollback" camunda:asyncAfter="true" calledElement="subwf_verify_application_deployed">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1wbk5zn</bpmn:incoming>
+      <bpmn:outgoing>Flow_10r9p69</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:boundaryEvent id="BoundaryEvent_0903cjg" attachedToRef="CallActivity_1vyy1kx">
+      <bpmn:outgoing>Flow_0409tey</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_139ca9l" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1wbk5zn" sourceRef="CallActivity_1fl40g2" targetRef="CallActivity_1vyy1kx" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_12xe424" default="SequenceFlow_1cwokxv">
+      <bpmn:incoming>SequenceFlow_0yj149k</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_11oovkv</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_1cwokxv</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_11oovkv" name="Revision Number == 0" sourceRef="ExclusiveGateway_12xe424" targetRef="CallActivity_1fl40g2">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${execution.getVariable("revisionNumber")=="0"}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SequenceFlow_1cwokxv" sourceRef="ExclusiveGateway_12xe424" targetRef="CallActivity_22222" />
+    <bpmn:serviceTask id="ServiceTask_0gt3u04" name="Calculate Delay and set app timeout" camunda:asyncAfter="true" camunda:delegateExpression="${calculateCamundaDelay}">
+      <bpmn:incoming>SequenceFlow_1bb81y2</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0yj149k</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_1bb81y2" sourceRef="Task_Rollback_ValidateInput" targetRef="ServiceTask_0gt3u04" />
+    <bpmn:sequenceFlow id="SequenceFlow_0yj149k" sourceRef="ServiceTask_0gt3u04" targetRef="ExclusiveGateway_12xe424" />
+    <bpmn:sequenceFlow id="SequenceFlow_1vmp92t" sourceRef="ScriptTask_0kc4koo" targetRef="Activity_Publish_Lifecycle_Message_End" />
+    <bpmn:sequenceFlow id="SequenceFlow_152hsl4" sourceRef="Activity_Publish_Lifecycle_Message_End" targetRef="EndEvent_0w4jhgu" />
+    <bpmn:sequenceFlow id="SequenceFlow_0i0j33l" sourceRef="ScriptTask_04qdr4v" targetRef="Activity_Publish_Lifecycle_Message_Error_End" />
+    <bpmn:sequenceFlow id="SequenceFlow_15mp5w9" sourceRef="Activity_Publish_Lifecycle_Message_Error_End" targetRef="EndEvent_0b4mknz" />
+    <bpmn:boundaryEvent id="BoundaryEvent_0rsar5a" attachedToRef="CallActivity_17kw5wz">
+      <bpmn:outgoing>Flow_141cimt</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_Error_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0i0j33l</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_15mp5w9</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:callActivity id="Activity_Publish_Lifecycle_Message_End" name="Publish Lifecycle message" calledElement="subwf_publish_lifecycle_message">
+      <bpmn:extensionElements>
+        <camunda:in variables="all" />
+        <camunda:out variables="all" />
+        <camunda:in businessKey="#{execution.processBusinessKey}" />
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_1vmp92t</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_152hsl4</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:sequenceFlow id="SequenceFlow_0cpz4e8" sourceRef="BoundaryEvent_publish_lifecycle_message_error" targetRef="EndEvent_0b4mknz" />
+    <bpmn:boundaryEvent id="BoundaryEvent_publish_lifecycle_message_error" attachedToRef="Activity_Publish_Lifecycle_Message_Error_End">
+      <bpmn:outgoing>SequenceFlow_0cpz4e8</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="BoundaryEvent_publish_lifecycle_message" attachedToRef="Activity_Publish_Lifecycle_Message_End">
+      <bpmn:outgoing>Flow_1214hp7</bpmn:outgoing>
+      <bpmn:errorEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:scriptTask id="Script_Log_Failures" name="Log Rollback Failure" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0xfvev6</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0vr5ue7</bpmn:outgoing>
+      <bpmn:script>import org.slf4j.LoggerFactory;
+def logger = LoggerFactory.getLogger("com.ericsson.amcommonwfs.RollbackFailed");
+String errorOutput = (String) execution.getVariable("errorMessage");
+if(errorOutput != null &amp;&amp; !errorOutput.equals("")){
+    execution.setVariable("message",errorOutput);
+} else {
+    execution.setVariable("message","unknown exception occured");
+}
+logger.error("Failed to rollback application due to " + execution.getVariable("message"));</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0vr5ue7" sourceRef="Script_Log_Failures" targetRef="Rollback_Validation_Error_Event" />
+    <bpmn:endEvent id="Rollback_Validation_Error_Event" name="VALIDATION_ERROR_END">
+      <bpmn:incoming>SequenceFlow_0vr5ue7</bpmn:incoming>
+      <bpmn:errorEventDefinition errorRef="Error_133lvz8" />
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnSuccess" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_0q4lo0m</bpmn:incoming>
+      <bpmn:outgoing>Flow_0eoaccs</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnValidationFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_1e6gfsj</bpmn:incoming>
+      <bpmn:outgoing>Flow_0xfvev6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0xfvev6" sourceRef="Task_RemoveTemporaryFilesOnValidationFailure" targetRef="Script_Log_Failures" />
+    <bpmn:serviceTask id="Task_RemoveTemporaryFilesOnFailure" name="Remove Temp Files" camunda:delegateExpression="${removeTempFilesDelegate}">
+      <bpmn:incoming>Flow_113r1ny</bpmn:incoming>
+      <bpmn:incoming>Flow_1mr5oaz</bpmn:incoming>
+      <bpmn:incoming>Flow_0409tey</bpmn:incoming>
+      <bpmn:incoming>Flow_141cimt</bpmn:incoming>
+      <bpmn:incoming>Flow_1214hp7</bpmn:incoming>
+      <bpmn:outgoing>Flow_1m3sh20</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1m3sh20" sourceRef="Task_RemoveTemporaryFilesOnFailure" targetRef="ScriptTask_04qdr4v" />
+    <bpmn:sequenceFlow id="Flow_1e6gfsj" sourceRef="BoundaryEvent_Rollback_Validation" targetRef="Task_RemoveTemporaryFilesOnValidationFailure" />
+    <bpmn:sequenceFlow id="Flow_113r1ny" sourceRef="BoundaryEvent_04odvte" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_1mr5oaz" sourceRef="BoundaryEvent_1y3p5nc" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_0409tey" sourceRef="BoundaryEvent_0903cjg" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_141cimt" sourceRef="BoundaryEvent_0rsar5a" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_1214hp7" sourceRef="BoundaryEvent_publish_lifecycle_message" targetRef="Task_RemoveTemporaryFilesOnFailure" />
+    <bpmn:sequenceFlow id="Flow_10r9p69" sourceRef="CallActivity_1vyy1kx" targetRef="CallActivity_17kw5wz" />
+    <bpmn:sequenceFlow id="Flow_0eoaccs" sourceRef="Task_RemoveTemporaryFilesOnSuccess" targetRef="ScriptTask_0kc4koo" />
+    <bpmn:sequenceFlow id="Flow_0q4lo0m" sourceRef="CallActivity_17kw5wz" targetRef="Task_RemoveTemporaryFilesOnSuccess" />
+  </bpmn:process>
+  <bpmn:error id="Error_16s1vgr" name="RollbackFailed" errorCode="error.com.rollback.failed" />
+  <bpmn:error id="Error_1cowz8h" />
+  <bpmn:error id="Error_00uf7z3" />
+  <bpmn:error id="Error_134sxm5" />
+  <bpmn:error id="Error_1vfs1zx" />
+  <bpmn:error id="Error_133lvz8" name="Validation_Failed" errorCode="error.rollback.validation.error" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="RollbackApplication__top">
+      <bpmndi:BPMNEdge id="Flow_1214hp7_di" bpmnElement="Flow_1214hp7">
+        <di:waypoint x="1770" y="289" />
+        <di:waypoint x="1770" y="420" />
+        <di:waypoint x="995" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_141cimt_di" bpmnElement="Flow_141cimt">
+        <di:waypoint x="1303" y="289" />
+        <di:waypoint x="1303" y="420" />
+        <di:waypoint x="995" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0409tey_di" bpmnElement="Flow_0409tey">
+        <di:waypoint x="1175" y="289" />
+        <di:waypoint x="1175" y="420" />
+        <di:waypoint x="995" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mr5oaz_di" bpmnElement="Flow_1mr5oaz">
+        <di:waypoint x="945" y="289" />
+        <di:waypoint x="945" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_113r1ny_di" bpmnElement="Flow_113r1ny">
+        <di:waypoint x="764" y="286" />
+        <di:waypoint x="764" y="420" />
+        <di:waypoint x="895" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1e6gfsj_di" bpmnElement="Flow_1e6gfsj">
+        <di:waypoint x="298" y="289" />
+        <di:waypoint x="298" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1m3sh20_di" bpmnElement="Flow_1m3sh20">
+        <di:waypoint x="945" y="460" />
+        <di:waypoint x="945" y="490" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xfvev6_di" bpmnElement="Flow_0xfvev6">
+        <di:waypoint x="309" y="390" />
+        <di:waypoint x="309" y="450" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0vr5ue7_di" bpmnElement="SequenceFlow_0vr5ue7">
+        <di:waypoint x="309" y="530" />
+        <di:waypoint x="309" y="602" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0cpz4e8_di" bpmnElement="SequenceFlow_0cpz4e8">
+        <di:waypoint x="895" y="708" />
+        <di:waypoint x="895" y="760" />
+        <di:waypoint x="927" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_15mp5w9_di" bpmnElement="SequenceFlow_15mp5w9">
+        <di:waypoint x="945" y="690" />
+        <di:waypoint x="945" y="742" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0i0j33l_di" bpmnElement="SequenceFlow_0i0j33l">
+        <di:waypoint x="945" y="570" />
+        <di:waypoint x="945" y="610" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_152hsl4_di" bpmnElement="SequenceFlow_152hsl4">
+        <di:waypoint x="1850" y="231" />
+        <di:waypoint x="1902" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1vmp92t_di" bpmnElement="SequenceFlow_1vmp92t">
+        <di:waypoint x="1690" y="231" />
+        <di:waypoint x="1750" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0yj149k_di" bpmnElement="SequenceFlow_0yj149k">
+        <di:waypoint x="509" y="231" />
+        <di:waypoint x="566" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1bb81y2_di" bpmnElement="SequenceFlow_1bb81y2">
+        <di:waypoint x="359" y="231" />
+        <di:waypoint x="409" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1cwokxv_di" bpmnElement="SequenceFlow_1cwokxv">
+        <di:waypoint x="615" y="230" />
+        <di:waypoint x="714" y="228" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_11oovkv_di" bpmnElement="SequenceFlow_11oovkv">
+        <di:waypoint x="591" y="206" />
+        <di:waypoint x="591" y="113" />
+        <di:waypoint x="945" y="113" />
+        <di:waypoint x="945" y="191" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="722" y="83" width="85" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1wbk5zn_di" bpmnElement="SequenceFlow_1wbk5zn">
+        <di:waypoint x="995" y="231" />
+        <di:waypoint x="1123" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_1jbho7s_di" bpmnElement="SequenceFlow_1jbho7s">
+        <di:waypoint x="814" y="231" />
+        <di:waypoint x="895" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_07sryf8_di" bpmnElement="SequenceFlow_07sryf8">
+        <di:waypoint x="197" y="231" />
+        <di:waypoint x="259" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10r9p69_di" bpmnElement="Flow_10r9p69">
+        <di:waypoint x="1223" y="230" />
+        <di:waypoint x="1275" y="230" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0eoaccs_di" bpmnElement="Flow_0eoaccs">
+        <di:waypoint x="1530" y="231" />
+        <di:waypoint x="1590" y="231" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0q4lo0m_di" bpmnElement="Flow_0q4lo0m">
+        <di:waypoint x="1375" y="229" />
+        <di:waypoint x="1430" y="228" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="StartEvent_0zzmzbp_di" bpmnElement="StartRollback_Event">
+        <dc:Bounds x="161" y="213" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="161" y="256" width="36" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0q3oxe1_di" bpmnElement="Task_Rollback_ValidateInput">
+        <dc:Bounds x="259" y="191" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1fl40g2_di" bpmnElement="CallActivity_1fl40g2">
+        <dc:Bounds x="895" y="191" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_0kc4koo_di" bpmnElement="ScriptTask_0kc4koo">
+        <dc:Bounds x="1590" y="191" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0w4jhgu_di" bpmnElement="EndEvent_0w4jhgu">
+        <dc:Bounds x="1902" y="213" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1908" y="256" width="24" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_04qdr4v_di" bpmnElement="ScriptTask_04qdr4v">
+        <dc:Bounds x="895" y="490" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0b4mknz_di" bpmnElement="EndEvent_0b4mknz">
+        <dc:Bounds x="927" y="742" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="912" y="785" width="67" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0roav1o_di" bpmnElement="CallActivity_22222">
+        <dc:Bounds x="714" y="188" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1vyy1kx_di" bpmnElement="CallActivity_1vyy1kx">
+        <dc:Bounds x="1123" y="191" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_12xe424_di" bpmnElement="ExclusiveGateway_12xe424" isMarkerVisible="true">
+        <dc:Bounds x="566" y="206" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_0gt3u04_di" bpmnElement="ServiceTask_0gt3u04">
+        <dc:Bounds x="409" y="191" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_1tohf56_di" bpmnElement="Activity_Publish_Lifecycle_Message_Error_End">
+        <dc:Bounds x="895" y="610" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_0ht9xpf_di" bpmnElement="Activity_Publish_Lifecycle_Message_End">
+        <dc:Bounds x="1750" y="191" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ScriptTask_157hgsp_di" bpmnElement="Script_Log_Failures">
+        <dc:Bounds x="259" y="450" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_11axvsq_di" bpmnElement="Rollback_Validation_Error_Event">
+        <dc:Bounds x="291" y="602" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="271" y="645" width="77" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0d332ep_di" bpmnElement="Task_RemoveTemporaryFilesOnValidationFailure">
+        <dc:Bounds x="259" y="310" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vpo9xr_di" bpmnElement="Task_RemoveTemporaryFilesOnFailure">
+        <dc:Bounds x="895" y="380" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CallActivity_17kw5wz_di" bpmnElement="CallActivity_17kw5wz">
+        <dc:Bounds x="1275" y="191" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12slzpt_di" bpmnElement="Task_RemoveTemporaryFilesOnSuccess">
+        <dc:Bounds x="1430" y="188" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1trilu3_di" bpmnElement="BoundaryEvent_publish_lifecycle_message">
+        <dc:Bounds x="1752" y="253" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_04tmrq3_di" bpmnElement="BoundaryEvent_publish_lifecycle_message_error">
+        <dc:Bounds x="877" y="672" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_0903cjg_di" bpmnElement="BoundaryEvent_0903cjg">
+        <dc:Bounds x="1157" y="253" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_04odvte_di" bpmnElement="BoundaryEvent_04odvte">
+        <dc:Bounds x="746" y="250" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1adm60g_di" bpmnElement="BoundaryEvent_Rollback_Validation">
+        <dc:Bounds x="280" y="253" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1y3p5nc_di" bpmnElement="BoundaryEvent_1y3p5nc">
+        <dc:Bounds x="927" y="253" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1q3v5eo_di" bpmnElement="BoundaryEvent_0rsar5a">
+        <dc:Bounds x="1285" y="253" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

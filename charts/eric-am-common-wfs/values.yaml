@@ -1,0 +1,280 @@
+#
+# COPYRIGHT Ericsson 2024
+#
+#
+#
+# The copyright to the computer program(s) herein is the property of
+#
+# Ericsson Inc. The programs may be used and/or copied only with written
+#
+# permission from Ericsson Inc. or in accordance with the terms and
+#
+# conditions stipulated in the agreement/contract under which the
+#
+# program(s) have been supplied.
+#
+
+# Default values for eric-am-common-wfs.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+
+nameOverride: "eric-am-common-wfs"
+
+podDisruptionBudget:
+  minAvailable: 0
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+    maxSurge: 0
+
+# DR-D1121-011 supported global parameters shall be left as comments (YAML comment) in the values.yaml
+#global:
+#  registry:
+#    url: armdocker.rnd.ericsson.se
+#    imagePullPolicy: IfNotPresent
+## pullSecret:
+#  timezone: UTC
+#  postgresCredentials:
+#    secret: eric-sec-access-mgmt-creds
+#  nodeSelector: {}
+#  labels: {}
+#  annotations: {}
+## internalIPFamily: IPv6 or IPv4
+#  db:
+#    connection:
+#      max-lifetime:
+#  # DR D1123-134
+#  securityPolicy:
+#    rolekind: "" # possible values: "ClusterRole", "Role", ""
+
+iam:
+  cacert:
+    secretName: iam-cacert-secret
+    key: tls.crt
+    filePath: ca.crt
+
+# enable autoconfigure for helm and docker registries
+autoConfigureDocker:
+  enabled: true
+
+imageCredentials:
+  commonWfs:
+    repoPath: # see default value in eric-product-info.yaml file
+  pgInitContainer:
+    repoPath: # see default value in eric-product-info.yaml file
+  helmExecutor:
+    repoPath: # see default value in eric-product-info.yaml file
+
+containerRegistry:
+  global:
+    registry:
+      pullSecret: regcred
+
+helm:
+  url: http://eric-lcm-helm-chart-registry:8080
+  repository: onboarded
+  repositoryName: adp-am
+  debug:
+    enabled: false
+
+container:
+  ports:
+    http: 8888
+
+service:
+  type: ClusterIP
+  port: 80
+
+resources:
+  commonwfs:
+    requests:
+      memory: "2Gi"
+      cpu: "400m"
+      ephemeral-storage: "1Gi"
+    limits:
+      memory: "3Gi"
+      cpu: "1000m"
+      ephemeral-storage: "1.5Gi"
+  commonwfsInit:
+    requests:
+      memory: "100Mi"
+      cpu: "100m"
+      ephemeral-storage: "250Mi"
+    limits:
+      memory: "300Mi"
+      cpu: "1000m"
+      ephemeral-storage: "500Mi"
+  helmExecutor:
+    requests:
+      memory: "1.5Gi"
+      cpu: "150m"
+      ephemeral-storage: "20Mi"
+    limits:
+      memory: "1.5Gi"
+      cpu: "1000m"
+      ephemeral-storage: "20Mi"
+
+database:
+  service: application-manager-postgres
+  schema: "camunda"
+  port: "5432"
+  creationTime: "50"
+
+prometheus:
+  path: "/actuator/prometheus"
+  scrape: "true"
+  scrape-role: "endpoints"
+  scrape-interval: "15s"
+
+dockerRegistry:
+  secret:
+
+userSecret: eric-evnfm-rbac-default-user
+
+kubernetes:
+  host: kubernetes.default
+
+health:
+  timeout:
+    read: "5000"
+    connection: "5000"
+
+camunda:
+  historyTimeToLive: "1"
+  historyLevel: activity
+
+logging:
+  logstash:
+    host: eric-log-transformer
+    port: 5025
+    syslogPort: 5014
+
+nodeSelector: {}
+labels: {}
+annotations: {}
+
+probes:
+  commonwfs:
+    livenessProbe:
+      initialDelaySeconds: 600
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 6
+    readinessProbe:
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+
+podPriority:
+  commonwfs:
+    priorityClassName: ""
+  helmExecutor:
+    priorityClassName: ""
+
+tolerations:
+  commonwfs:
+    - key: node.kubernetes.io/not-ready
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+    - key: node.kubernetes.io/unreachable
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+  helmExecutor:
+    - key: node.kubernetes.io/not-ready
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+    - key: node.kubernetes.io/unreachable
+      operator: Exists
+      effect: NoExecute
+      tolerationSeconds: 300
+
+highAvailability:
+  serviceMesh:
+    logLevel: info
+    routes:
+      get:
+        retries:
+          maxAttempts: 2
+          perTryTimeout: 5s
+        timeout: 8s
+      postLcm:
+        retries:
+          maxAttempts: 2
+          perTryTimeout: 30s
+        timeout: 45s
+      postInternal:
+        retries:
+          maxAttempts: 2
+          perTryTimeout: 30s
+        timeout: 45s
+    trafficPolicy:
+      outlierDetection:
+        splitExternalLocalOriginErrors: true
+        consecutiveLocalOriginFailures: 2
+        consecutive5xxErrors: 2
+        interval: 5s
+        baseEjectionTime: 1m
+
+txRetry:
+  attempts: "5"
+  delayInSeconds: "10"
+
+terminationGracePeriodSeconds:
+  commonwfs: 270
+
+#temporary solution
+applyDeprecatedDesignRules: true
+
+affinity:
+  podAntiAffinity: "hard"
+  topologyKey: "kubernetes.io/hostname"
+
+redis:
+  host: "eric-cloud-native-kvdb-rd-operand"
+  port: 6379
+  tlsPort: 6380
+  acl:
+    enabled: true
+    user: default
+    userKey: "username"
+    passKey: "password"
+
+helmExecutor:
+  job:
+    template: false
+    ttlSecondsAfterFinished: 14400
+  wfs:
+    camunda:
+      url: "http://eric-am-common-wfs/engine-rest/message"
+
+maxJobsAllowed: 30
+
+istio:
+  excludeOutboundPorts: "5432,5025,6379,6380"
+
+# DR D1123-127
+appArmorProfile:
+  # The setting applies to all container when the container name is omitted.
+  # { choice='unconfined, runtime/default, localhost, "" ' } [ default="" ]
+  type: ""
+
+# DR D1123-128
+seccompProfile:
+  # The setting applies to all container when the container name is omitted.
+  # { choice='unconfined, runtime/default, localhost, "" ' } [ default="" ]
+  type: ""
+
+#DR-D1120-090
+topologySpreadConstraints: {}
+
+# DR D1123-134
+securityPolicy:
+  rolename: ""

@@ -1,0 +1,14 @@
+{
+  "namespace": "eric-crd-ns",
+  "chartUrl": "https://arm.sero.gic.ericsson.se/artifactory/proj-adp-gs-all-helm/eric-data-kvdb-ag-crd/eric-data-kvdb-ag-crd-4.2.0-1.tgz",
+  "chartName": "eric-data-kvdb-ag-crd",
+  "chartVersion": "4.2.0-1",
+  "chartType": "CRD",
+  "applicationTimeOut": "400",
+  "lifecycleOperationId": "my-id",
+  "state": "starting",
+  "helmClientVersion": "3.8",
+  "overrideGlobalRegistry": true,
+  "additionalParams": {
+  }
+}

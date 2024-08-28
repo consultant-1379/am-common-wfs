@@ -1,0 +1,12 @@
+{
+  "namespace": "wfs-acceptance-v2-UNIQUE_NAME",
+  "chartUrl": "https://arm.epk.ericsson.se/artifactory/proj-am-helm-local/acceptance-test/spider-app-2.74.7.tgz",
+  "applicationTimeOut": "400",
+  "lifecycleOperationId": "my-id",
+  "state": "starting",
+  "helmClientVersion": "3.8",
+  "overrideGlobalRegistry": true,
+  "additionalParams": {
+  }
+}
+

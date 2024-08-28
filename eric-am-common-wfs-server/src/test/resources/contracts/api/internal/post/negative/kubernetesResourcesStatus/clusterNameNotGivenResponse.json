@@ -1,0 +1,8 @@
+{
+  "errorDetails": [
+    {
+      "parameterName": "clusterName",
+      "message": "Required request parameter 'clusterName' for method parameter type String is not present"
+    }
+  ]
+}
